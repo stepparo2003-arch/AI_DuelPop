@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+**/.DS_Store
+
+# Runtime output and local battle history
+backend/generated/
+backend/data/
+
+# Local logs / caches
+*.log
+npm-debug.log*
