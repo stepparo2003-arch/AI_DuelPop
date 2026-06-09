@@ -1,0 +1,2604 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI ARENA DUEL - Lobby</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Sora:wght@600;700;800&display=swap");
+
+    :root {
+      --bg: #080910;
+      --surface: #11131d;
+      --surface-2: #151825;
+      --surface-3: #1f2230;
+      --surface-4: #2e303c;
+      --deep: #090d1a;
+      --stroke: #2a3045;
+      --stroke-soft: rgba(255, 255, 255, .08);
+      --text: #f5f7fa;
+      --muted: #a7adbf;
+      --red: #ffb3ac;
+      --red-hot: #ff544e;
+      --blue: #008cff;
+      --blue-soft: #b0c6ff;
+      --gold: #ffd700;
+      --green: #30d158;
+      --danger: #ff7a70;
+      --footer-h: 144px;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); color: var(--text); }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255, 84, 78, .14), transparent 30%),
+        radial-gradient(circle at 82% 16%, rgba(3, 104, 236, .14), transparent 28%),
+        linear-gradient(180deg, #10111a 0%, #07080f 38%, #080910 100%);
+      color: var(--text);
+      font-family: "Hanken Grotesk", system-ui, sans-serif;
+    }
+
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+      opacity: .055;
+      background:
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, .42) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, .08), rgba(0, 255, 0, .025), rgba(0, 0, 255, .08));
+      background-size: 100% 4px, 3px 100%;
+      mix-blend-mode: screen;
+    }
+
+    .appbar {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 60;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 6vw, 64px);
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(18, 19, 26, .86);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .52);
+    }
+
+    .brand {
+      margin: 0;
+      color: var(--red);
+      font-family: Sora, sans-serif;
+      font-size: clamp(24px, 3vw, 40px);
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-shadow: 0 0 12px rgba(255, 179, 172, .48);
+      white-space: nowrap;
+    }
+
+    .top-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px;
+      border: 1px solid rgba(42,48,69,.95);
+      border-radius: 8px;
+      background: rgba(9, 13, 26, .72);
+    }
+    .top-tab {
+      min-height: 36px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+    .top-tab.active {
+      color: #07101b;
+      background: linear-gradient(90deg, var(--red), #eef4ff, var(--blue));
+      box-shadow: 0 0 18px rgba(255,255,255,.16);
+    }
+
+    .icon-row { display: flex; gap: 22px; align-items: center; }
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      transition: color .2s ease, transform .2s ease;
+    }
+    .icon-btn:hover { color: var(--text); transform: translateY(-1px); }
+    .icon-btn svg { width: 23px; height: 23px; stroke: currentColor; }
+
+    main {
+      min-height: 100vh;
+      padding-top: 80px;
+      padding-bottom: calc(var(--footer-h) + 44px);
+    }
+
+    .hero {
+      padding: 52px clamp(20px, 6vw, 64px) 42px;
+      text-align: center;
+    }
+
+    .hero h2 {
+      margin: 0 0 18px;
+      color: #fff8f8;
+      font-family: Sora, sans-serif;
+      font-size: clamp(42px, 7vw, 72px);
+      line-height: 1.04;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      text-shadow: 3px 0 var(--red), -3px 0 var(--blue);
+    }
+
+    .hero p {
+      max-width: 690px;
+      margin: 0 auto;
+      color: #d7d9e3;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .arena-wrap {
+      width: min(1020px, calc(100vw - 40px));
+      margin: 0 auto 24px;
+    }
+
+    .arena {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border: 2px solid var(--stroke);
+      border-radius: 28px;
+      background: var(--deep);
+      box-shadow:
+        0 0 0 5px rgba(255, 255, 255, .025),
+        0 0 52px rgba(0, 0, 0, .7),
+        inset 0 0 80px rgba(0, 0, 0, .72);
+    }
+
+    .arena-media,
+    .arena-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .arena-video { opacity: .55; filter: saturate(.95) contrast(1.06) brightness(.55); }
+    .arena-media { opacity: 0; transition: opacity .35s ease; }
+    .arena[data-mode="image"] .arena-media { opacity: .86; }
+    .arena[data-mode="video-ready"] .arena-video { opacity: .76; filter: saturate(1.02) contrast(1.06) brightness(.62); }
+    .arena[data-mode="video"] .arena-video { opacity: .92; filter: saturate(1.06) contrast(1.08) brightness(.75); }
+
+    .arena-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(255, 179, 172, .17), transparent 36%, transparent 64%, rgba(3, 104, 236, .18)),
+        radial-gradient(circle at 50% 50%, transparent 30%, rgba(3, 6, 17, .84) 88%);
+      pointer-events: none;
+    }
+
+    .arena-frame {
+      position: absolute;
+      inset: 0;
+      border: 4px solid rgba(255,255,255,.04);
+      border-radius: 26px;
+      pointer-events: none;
+    }
+
+    .corner {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      pointer-events: none;
+    }
+    .corner.tl { top: 24px; left: 24px; border-top: 2px solid rgba(255,179,172,.65); border-left: 2px solid rgba(255,179,172,.65); }
+    .corner.bl { bottom: 24px; left: 24px; border-bottom: 2px solid rgba(255,179,172,.65); border-left: 2px solid rgba(255,179,172,.65); }
+    .corner.tr { top: 24px; right: 24px; border-top: 2px solid rgba(0,140,255,.65); border-right: 2px solid rgba(0,140,255,.65); }
+    .corner.br { bottom: 24px; right: 24px; border-bottom: 2px solid rgba(0,140,255,.65); border-right: 2px solid rgba(0,140,255,.65); }
+
+    .arena-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: center;
+      padding: 28px;
+      background: rgba(7, 8, 15, .22);
+      backdrop-filter: blur(1.5px);
+      transition: opacity .25s ease;
+    }
+    .arena[data-mode="video"] .arena-state {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 62px;
+      height: 62px;
+      border-radius: 999px;
+      border: 4px solid rgba(255, 179, 172, .24);
+      border-top-color: var(--red);
+      animation: spin 1.1s linear infinite;
+    }
+
+    .arena-title {
+      margin: 0;
+      font-family: Sora, sans-serif;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-shadow: 2px 2px 0 rgba(0,0,0,.7);
+    }
+
+    .arena-subtitle {
+      margin: 0;
+      color: #d4d7e2;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .38em;
+      text-transform: uppercase;
+    }
+
+    .play-battle {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+      padding: 16px 28px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 8px;
+      color: #07101b;
+      background: linear-gradient(90deg, var(--red), #fff, var(--blue));
+      font-family: "JetBrains Mono", monospace;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      box-shadow: 0 0 28px rgba(255,255,255,.23);
+    }
+    .arena[data-mode="video-ready"] .play-battle { display: inline-flex; }
+    .arena[data-mode="video-ready"] .spinner { display: none; }
+
+    .players {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      width: min(1440px, calc(100vw - 128px));
+      margin: 0 auto;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(42, 48, 69, .95);
+      background: rgba(20, 24, 39, .73);
+      backdrop-filter: blur(12px);
+    }
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .06;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent 0 3px, #fff 3px 4px);
+    }
+    .panel.a { border-left: 2px solid rgba(255, 179, 172, .62); border-top: 2px solid rgba(255, 179, 172, .54); }
+    .panel.b { border-right: 2px solid rgba(0, 140, 255, .72); border-top: 2px solid rgba(0, 140, 255, .55); }
+
+    .panel-head {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 16px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .player-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-family: Sora, sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .panel.a .player-name { color: var(--red); }
+    .panel.b .player-name { color: var(--blue); }
+    .medals {
+      display: inline-flex;
+      gap: 3px;
+      min-width: 0;
+      align-items: center;
+    }
+    .medal {
+      width: 28px;
+      height: 20px;
+      display: inline-block;
+      background: url("../../assets/static/胜利金牌.svg") center / contain no-repeat;
+      filter: drop-shadow(0 0 7px rgba(255,215,0,.45));
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      animation: blinksoft 1.3s ease-in-out infinite;
+    }
+    .panel.a .dot { background: var(--red); box-shadow: 0 0 12px var(--red-hot); }
+    .panel.b .dot { background: var(--blue); box-shadow: 0 0 12px var(--blue); }
+
+    .status {
+      flex: 0 0 auto;
+      padding: 7px 11px;
+      border-radius: 4px;
+      border: 1px solid currentColor;
+      background: rgba(255,255,255,.04);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .status.ready { color: #07110d; border-color: transparent; background: var(--green); box-shadow: 0 0 12px rgba(48,209,88,.52); }
+    .panel.a .status:not(.ready) { color: var(--red); }
+    .panel.b .status:not(.ready) { color: var(--blue); }
+
+    .section-label {
+      margin: 0 0 14px;
+      color: #c4cad8;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .rail {
+      position: relative;
+      display: flex;
+      gap: 16px;
+      min-width: 0;
+      overflow-x: auto;
+      padding-bottom: 18px;
+      margin-bottom: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: #36405b rgba(42, 48, 69, .35);
+    }
+    .rail::-webkit-scrollbar { height: 4px; }
+    .rail::-webkit-scrollbar-track { background: rgba(42, 48, 69, .35); }
+    .rail::-webkit-scrollbar-thumb { background: #36405b; border-radius: 4px; }
+    .rail.locked { opacity: .5; pointer-events: none; filter: grayscale(.35); }
+
+    .card {
+      position: relative;
+      flex: 0 0 140px;
+      width: 140px;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 2px solid var(--stroke);
+      background: #161928;
+      color: var(--muted);
+      transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .card:hover { transform: translateY(-2px); }
+    .panel.a .card:hover { border-color: var(--red); }
+    .panel.b .card:hover { border-color: var(--blue); }
+    .card img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      opacity: .72;
+      transition: opacity .18s ease, transform .2s ease;
+    }
+    .card:hover img, .card.selected img { opacity: 1; }
+    .card.selected { transform: translateY(-1px); }
+    .panel.a .card.selected { border-color: var(--red); box-shadow: 0 0 16px rgba(255,179,172,.34), inset 0 0 9px rgba(255,179,172,.2); }
+    .panel.b .card.selected { border-color: var(--blue); box-shadow: 0 0 16px rgba(0,140,255,.38), inset 0 0 9px rgba(0,140,255,.22); }
+
+    .check {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      width: 30px;
+      height: 30px;
+      display: none;
+      place-items: center;
+      border-radius: 999px;
+      color: #180304;
+      font-family: Sora, sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+    }
+    .panel.a .check { background: var(--red); }
+    .panel.b .check { background: var(--blue); color: #fff; }
+    .card.selected .check { display: grid; }
+
+    .card-name {
+      position: absolute;
+      inset: auto 8px 8px;
+      padding: 7px 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 6px;
+      background: rgba(7, 8, 15, .62);
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+
+    .add-slot {
+      flex: 0 0 140px;
+      width: 140px;
+      aspect-ratio: 3 / 4;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      border: 1px dashed #38405a;
+      background: rgba(30, 31, 39, .58);
+      color: #b7bccb;
+      font-size: 30px;
+    }
+
+    .custom-box {
+      position: relative;
+      margin-top: 10px;
+      overflow: hidden;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      background: rgba(30, 31, 39, .72);
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .tab {
+      flex: 1;
+      min-height: 42px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .panel.a .tab.active { color: var(--red); border-color: var(--red); background: rgba(255,179,172,.12); }
+    .panel.b .tab.active { color: var(--blue); border-color: var(--blue); background: rgba(0,140,255,.12); }
+
+    .prompt-wrap { padding: 16px; }
+    textarea {
+      width: 100%;
+      height: 94px;
+      display: none;
+      resize: none;
+      outline: 0;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      background: #151927;
+      color: var(--text);
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    textarea.active { display: block; }
+    textarea::placeholder { color: rgba(167, 173, 191, .52); }
+    .panel.a textarea:focus { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+    .panel.b textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+    textarea:disabled { opacity: .48; background: rgba(30,31,39,.45); }
+
+    .footer {
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 50;
+      min-height: var(--footer-h);
+      padding: 24px clamp(20px, 6vw, 64px);
+      border-top: 1px solid var(--stroke);
+      background: rgba(10, 13, 27, .92);
+      backdrop-filter: blur(18px);
+    }
+    .footer-inner {
+      width: min(900px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    .start {
+      position: relative;
+      width: 100%;
+      min-height: 78px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 8px;
+      background: var(--surface-4);
+      color: rgba(215, 219, 234, .52);
+      font-family: Sora, sans-serif;
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      transition: opacity .25s ease, color .25s ease, transform .25s ease, box-shadow .25s ease;
+    }
+    .start::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: linear-gradient(90deg, var(--red), #eef4ff, var(--blue));
+      transition: opacity .25s ease;
+    }
+    .start span { position: relative; z-index: 1; }
+    .start.ready {
+      color: #190b10;
+      opacity: 1;
+      box-shadow: 0 0 22px rgba(255, 84, 78, .28);
+      animation: battlePulse 2s ease-in-out infinite;
+    }
+    .start.ready::before { opacity: 1; }
+    .start:not(.ready) { opacity: .62; }
+
+    .fineprint {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: #c4cad8;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .05em;
+    }
+    .fineprint a { color: inherit; text-decoration: none; }
+    .links { display: flex; gap: 28px; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 130;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(7, 8, 15, .86);
+      backdrop-filter: blur(16px);
+    }
+    .modal.open { display: grid; }
+    .dialog {
+      width: min(920px, 100%);
+      border-radius: 18px;
+      border: 1px solid var(--stroke);
+      background: rgba(20, 24, 39, .88);
+      box-shadow: 0 0 60px rgba(0,0,0,.5);
+      padding: clamp(28px, 5vw, 52px);
+      text-align: center;
+    }
+    .warning .dialog { width: min(460px, 100%); border-color: rgba(255,122,112,.75); box-shadow: 0 0 34px rgba(255,84,78,.18); }
+    .loading .dialog { background: rgba(8, 9, 16, .92); border: 4px solid rgba(255,179,172,.22); }
+    .result .dialog { border: 4px solid var(--gold); box-shadow: 0 0 56px rgba(255,215,0,.22); }
+
+    .modal h3,
+    .modal h2 {
+      margin: 0 0 18px;
+      font-family: Sora, sans-serif;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .loading h3 {
+      color: var(--red);
+      font-size: clamp(42px, 6vw, 70px);
+      text-shadow: 2px 0 var(--red), -2px 0 var(--blue);
+    }
+    .warning h3 { color: var(--danger); font-size: 24px; }
+    .result h2 { color: var(--gold); font-size: clamp(42px, 6vw, 70px); }
+    .modal p { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.6; }
+
+    .progress {
+      height: 8px;
+      margin: 28px 0;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--stroke);
+    }
+    .progress div {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      transition: width .35s ease;
+    }
+    .loading-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 32px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .elapsed-time {
+      color: var(--blue);
+      font-family: Sora, sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      align-items: center;
+      margin: 22px 0 26px;
+      font-family: Sora, sans-serif;
+      font-size: clamp(22px, 3vw, 34px);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .reason {
+      margin: 0 auto 28px;
+      padding: 22px;
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      background: rgba(9,13,26,.88);
+      text-align: left;
+    }
+    .reason h4 {
+      margin: 0 0 10px;
+      color: var(--gold);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .action {
+      min-width: 180px;
+      padding: 14px 22px;
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: var(--surface-4);
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .action.primary { border-color: transparent; background: var(--red); color: #220306; }
+    .action.blue { border-color: transparent; background: var(--blue); color: #fff; }
+
+    .hidden-view { display: none !important; }
+    .library {
+      width: min(1440px, calc(100vw - 128px));
+      margin: 0 auto;
+      padding: 128px 0 calc(var(--footer-h) + 52px);
+    }
+    .library-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 26px;
+      border-bottom: 1px solid var(--stroke);
+      padding-bottom: 20px;
+    }
+    .library-kicker {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .library-title {
+      margin: 0;
+      font-family: Sora, sans-serif;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-shadow: 2px 0 var(--red), -2px 0 var(--blue);
+    }
+    .library-subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+    .library-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .library-count {
+      padding: 9px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 6px;
+      color: var(--muted);
+      background: rgba(20,24,39,.68);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .library-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+    .library-grid.summary-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .record-card {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      background: rgba(20,24,39,.78);
+      color: var(--text);
+      text-align: left;
+      box-shadow: 0 0 28px rgba(0,0,0,.24);
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .record-card.selected {
+      border-color: rgba(255,122,112,.72);
+      box-shadow: 0 0 30px rgba(255,84,78,.14), 0 0 28px rgba(0,0,0,.3);
+    }
+    .record-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,215,0,.45);
+      box-shadow: 0 0 30px rgba(255,215,0,.1), 0 0 28px rgba(0,0,0,.3);
+    }
+    .record-open {
+      width: 100%;
+      display: block;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+    }
+    .record-select {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 0 8px;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 5px;
+      background: rgba(7,8,15,.78);
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .record-select input {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--danger);
+      cursor: pointer;
+    }
+    .record-delete {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 2;
+      min-height: 30px;
+      padding: 0 9px;
+      border: 1px solid rgba(255,122,112,.45);
+      border-radius: 5px;
+      background: rgba(72,22,27,.82);
+      color: #ffd4d0;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .record-delete:hover,
+    .asset-btn.danger:hover {
+      border-color: rgba(255,122,112,.82);
+      color: #fff;
+      background: rgba(126,33,39,.92);
+    }
+    .record-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #070a15;
+      overflow: hidden;
+    }
+    .record-thumb img,
+    .record-thumb video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .record-winner {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      padding: 6px 8px;
+      border: 1px solid rgba(255,215,0,.38);
+      border-radius: 4px;
+      background: rgba(7,8,15,.72);
+      color: var(--gold);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .record-body { padding: 14px; }
+    .record-title {
+      margin: 0 0 8px;
+      font-family: Sora, sans-serif;
+      font-size: 18px;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+    .record-meta {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .record-side {
+      display: block;
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .detail-back {
+      margin-bottom: 14px;
+    }
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .detail-actions .asset-btn {
+      width: 224px;
+      height: 58px;
+      min-height: 58px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      letter-spacing: .14em;
+    }
+    .detail-actions .detail-back {
+      margin-bottom: 0;
+    }
+    .asset-card {
+      overflow: hidden;
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      background: rgba(20,24,39,.78);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 0 34px rgba(0,0,0,.28);
+    }
+    .asset-media { background: var(--stroke); }
+    .asset-preview {
+      position: relative;
+      min-height: 360px;
+      background: #070a15;
+      overflow: hidden;
+    }
+    .asset-preview img,
+    .asset-preview video {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      display: block;
+      object-fit: cover;
+    }
+    .asset-preview-label {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 6px 9px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 4px;
+      background: rgba(7,8,15,.72);
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .asset-body { padding: 18px; }
+    .asset-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .asset-title {
+      margin: 0;
+      font-family: Sora, sans-serif;
+      font-size: 22px;
+      line-height: 1.25;
+      text-transform: uppercase;
+    }
+    .asset-time {
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .asset-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .asset-player {
+      position: relative;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      background: rgba(9,13,26,.58);
+      padding: 14px;
+    }
+    .winner-crown {
+      display: block;
+      width: max-content;
+      margin: -8px 0 2px -2px;
+      color: var(--gold);
+      font-family: Sora, sans-serif;
+      font-size: 34px;
+      line-height: 1;
+      transform: rotate(-30deg);
+      transform-origin: center;
+      text-shadow: 0 0 14px rgba(255,215,0,.55), 0 3px 0 rgba(0,0,0,.55);
+      pointer-events: none;
+    }
+    .asset-player.a { border-color: rgba(255,179,172,.35); }
+    .asset-player.b { border-color: rgba(0,140,255,.38); }
+    .asset-player h4 {
+      margin: 0 0 8px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .asset-player.a h4 { color: var(--red); }
+    .asset-player.b h4 { color: var(--blue); }
+    .asset-player p {
+      margin: 4px 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .asset-section-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .thumb-box,
+    .text-box {
+      position: relative;
+      border: 1px solid rgba(42,48,69,.78);
+      border-radius: 8px;
+      background: rgba(13,16,32,.64);
+      overflow: hidden;
+    }
+    .box-head {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(42,48,69,.72);
+    }
+    .box-title {
+      color: var(--gold);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .box-actions {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .icon-action {
+      width: 30px;
+      height: 30px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 6px;
+      background: rgba(46,48,60,.74);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .icon-action:hover { border-color: rgba(255,255,255,.28); color: #fff; }
+    .icon-action svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px;
+    }
+    .thumb-grid.single { grid-template-columns: 1fr; }
+    .thumb-item {
+      position: relative;
+      min-height: 128px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(8,10,19,.88);
+    }
+    .thumb-item button {
+      width: 100%;
+      height: 100%;
+      min-height: 128px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+    }
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      min-height: 128px;
+      display: block;
+      object-fit: cover;
+    }
+    .thumb-caption {
+      position: absolute;
+      left: 8px;
+      bottom: 8px;
+      max-width: calc(100% - 16px);
+      padding: 5px 7px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 4px;
+      background: rgba(7,8,15,.72);
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .thumb-placeholder {
+      min-height: 128px;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .text-content {
+      max-height: 78px;
+      overflow: hidden;
+      padding: 12px;
+      color: #d8dbe6;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .text-box.expanded .text-content { max-height: none; }
+    .asset-steps {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .asset-step {
+      display: grid;
+      grid-template-columns: 128px 1fr;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid rgba(42,48,69,.72);
+      border-radius: 8px;
+      background: rgba(13,16,32,.58);
+    }
+    .asset-step strong {
+      color: var(--gold);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .asset-step span {
+      color: #d8dbe6;
+      font-size: 14px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .asset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .asset-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 6px;
+      background: var(--surface-4);
+      color: var(--text);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .asset-btn.primary { color: #07101b; border-color: transparent; background: linear-gradient(90deg, var(--red), var(--blue)); }
+    .asset-btn.danger {
+      border-color: rgba(255,122,112,.5);
+      background: rgba(72,22,27,.72);
+      color: #ffd4d0;
+    }
+    .asset-btn:disabled {
+      opacity: .42;
+      filter: grayscale(.25);
+    }
+    .lightbox .dialog {
+      width: min(1180px, calc(100vw - 42px));
+      padding: 18px;
+    }
+    .lightbox img {
+      width: 100%;
+      max-height: 76vh;
+      display: block;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #05070d;
+    }
+    .lightbox-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .empty-library {
+      grid-column: 1 / -1;
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--stroke);
+      border-radius: 12px;
+      color: var(--muted);
+      background: rgba(20,24,39,.42);
+      text-align: center;
+      padding: 28px;
+    }
+    .empty-library h3 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-family: Sora, sans-serif;
+      font-size: 26px;
+      text-transform: uppercase;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes blinksoft { 50% { opacity: .45; } }
+    @keyframes battlePulse {
+      0%, 100% { box-shadow: 0 0 18px rgba(255, 84, 78, .34); }
+      50% { box-shadow: 0 0 30px rgba(0, 140, 255, .48); }
+    }
+
+    @media (max-width: 1020px) {
+      :root { --footer-h: 154px; }
+      .players { width: calc(100vw - 40px); grid-template-columns: 1fr; }
+      .hero { padding-top: 42px; }
+      .library { width: calc(100vw - 40px); }
+      .library-grid { grid-template-columns: 1fr; }
+      .library-grid.summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      :root { --footer-h: 176px; }
+      .appbar { height: 68px; }
+      .brand { font-size: 21px; letter-spacing: .11em; }
+      main { padding-top: 68px; }
+      .hero h2 { font-size: 38px; }
+      .hero p { font-size: 16px; }
+      .arena-wrap { width: calc(100vw - 24px); }
+      .arena-title { letter-spacing: .12em; }
+      .arena-subtitle { letter-spacing: .18em; }
+      .panel { padding: 18px; }
+      .card, .add-slot { flex-basis: 118px; width: 118px; }
+      .fineprint { flex-direction: column; align-items: center; text-align: center; }
+      .start { min-height: 66px; font-size: 24px; letter-spacing: .12em; }
+      .result-grid { grid-template-columns: 1fr; }
+      .appbar { gap: 12px; }
+      .top-tabs { position: fixed; left: 12px; right: 12px; top: 76px; z-index: 61; justify-content: center; }
+      main { padding-top: 128px; }
+      .library { padding-top: 152px; }
+      .library-head { align-items: flex-start; flex-direction: column; }
+      .library-actions { justify-content: flex-start; }
+      .detail-actions .asset-btn { width: 100%; }
+      .asset-media, .asset-columns, .asset-players { grid-template-columns: 1fr; }
+      .asset-step { grid-template-columns: 1fr; gap: 6px; }
+      .library-grid.summary-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <header class="appbar">
+    <h1 class="brand">AI ARENA DUEL</h1>
+    <nav class="top-tabs" aria-label="Primary views">
+      <button class="top-tab active" type="button" data-view-tab="lobby">Battle Lobby</button>
+      <button class="top-tab" type="button" data-view-tab="library">Asset Library</button>
+    </nav>
+    <div class="icon-row" aria-label="App controls">
+      <button class="icon-btn" type="button" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 15.4A3.4 3.4 0 1 0 12 8.6a3.4 3.4 0 0 0 0 6.8Z"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1h.1a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg>
+      </button>
+      <button class="icon-btn" type="button" title="Profile" aria-label="Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="lobbyView">
+    <section class="hero">
+      <h2>Choose Your Fighter</h2>
+      <p>Pick your weapon. Let AI decide the battle. Experience high-stakes cinematic duels generated in real-time.</p>
+    </section>
+
+    <section class="arena-wrap" aria-label="Arena preview">
+      <div class="arena" id="arena" data-mode="waiting">
+        <video class="arena-video" id="arenaVideo" src="../../assets/static/等待玩家进入视频.mp4" autoplay muted loop playsinline></video>
+        <img class="arena-media" id="arenaImage" src="../../assets/static/格斗占位图.png" alt="Generated battle standoff">
+        <div class="arena-glow"></div>
+        <div class="arena-frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="arena-state" id="arenaState">
+          <div class="spinner" aria-hidden="true"></div>
+          <h3 class="arena-title" id="arenaTitle">Waiting For Players</h3>
+          <p class="arena-subtitle" id="arenaSubtitle">Waiting for 2 players to join</p>
+          <button class="play-battle" id="playBattle" type="button">
+            <span>Play Battle</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="players" aria-label="Player configuration">
+      <article class="panel a" data-player-panel="a">
+        <div class="panel-head">
+          <h4 class="player-name"><span class="dot"></span>PLAYER A <span class="medals" id="medals-a" aria-label="Player A win streak"></span></h4>
+          <span class="status" id="status-a">Not Ready</span>
+        </div>
+
+        <h5 class="section-label">Choose Character</h5>
+        <div class="rail" id="cards-a-char">
+          <button class="card" data-player="a" data-type="char" data-name="Bounty Hunter" data-desc="A masked gun-for-hire with tactical armor."><img src="../../assets/static/赏金猎人.png" alt="Bounty Hunter"><span class="check">✓</span><span class="card-name">Bounty Hunter</span></button>
+          <button class="card" data-player="a" data-type="char" data-name="Iron Brawler" data-desc="A heavyweight armored fighter made for close combat."><img src="../../assets/static/铁拳战士.png" alt="Iron Brawler"><span class="check">✓</span><span class="card-name">Iron Brawler</span></button>
+          <button class="card" data-player="a" data-type="char" data-name="Mecha Ronin" data-desc="A red-lit cyber samurai in plated armor."><img src="../../assets/static/机械人.png" alt="Mecha Ronin"><span class="check">✓</span><span class="card-name">Mecha Ronin</span></button>
+          <button class="card" data-player="a" data-type="char" data-name="Thunder Mage" data-desc="A ranged caster charged with unstable lightning."><img src="../../assets/static/雷电法师.png" alt="Thunder Mage"><span class="check">✓</span><span class="card-name">Thunder Mage</span></button>
+          <button class="card" data-player="a" data-type="char" data-name="Rage Brute" data-desc="A massive beast-like bruiser with raw impact."><img src="../../assets/static/狂暴兽人.png" alt="Rage Brute"><span class="check">✓</span><span class="card-name">Rage Brute</span></button>
+          <button class="card" data-player="a" data-type="char" data-name="Shadow Assassin" data-desc="A silent rogue AI wrapped in black tactical fabric."><img src="../../assets/static/暗影刺客.png" alt="Shadow Assassin"><span class="check">✓</span><span class="card-name">Shadow Assassin</span></button>
+        </div>
+
+        <h5 class="section-label">Choose Weapon</h5>
+        <div class="rail" id="cards-a-weapon">
+          <button class="card" data-player="a" data-type="weapon" data-name="Thunder Staff" data-desc="A fast electric weapon that chains attacks."><img src="../../assets/static/双截棍.png" alt="Thunder Staff"><span class="check">✓</span><span class="card-name">Nunchaku</span></button>
+          <button class="card" data-player="a" data-type="weapon" data-name="Holy Sword" data-desc="A balanced melee weapon with clean reach."><img src="../../assets/static/圣剑.png" alt="Holy Sword"><span class="check">✓</span><span class="card-name">Holy Sword</span></button>
+          <button class="card" data-player="a" data-type="weapon" data-name="Machete" data-desc="A brutal close-range blade with high pressure."><img src="../../assets/static/砍刀.png" alt="Machete"><span class="check">✓</span><span class="card-name">Machete</span></button>
+          <button class="card" data-player="a" data-type="weapon" data-name="Assault Rifle" data-desc="A flexible mid-range weapon with sustained fire."><img src="../../assets/static/突击步枪.png" alt="Assault Rifle"><span class="check">✓</span><span class="card-name">Assault Rifle</span></button>
+          <button class="card" data-player="a" data-type="weapon" data-name="Quantum Cannon" data-desc="A long-range energy cannon with superior burst damage."><img src="../../assets/static/量子聚能炮.png" alt="Quantum Cannon"><span class="check">✓</span><span class="card-name">Quantum Cannon</span></button>
+          <button class="card" data-player="a" data-type="weapon" data-name="Rocket Launcher" data-desc="A destructive heavy weapon with area pressure."><img src="../../assets/static/火箭筒.png" alt="Rocket Launcher"><span class="check">✓</span><span class="card-name">Rocket</span></button>
+        </div>
+
+        <div class="custom-box">
+          <div class="tabs">
+            <button class="tab active" type="button" data-tab="a-char">Custom Character</button>
+            <button class="tab" type="button" data-tab="a-weapon">Custom Weapon</button>
+          </div>
+          <div class="prompt-wrap">
+            <textarea class="active" id="prompt-a-char" data-player="a" data-type="char" placeholder="Describe your custom fighter prompt here... Do not mention specific names (such as a famous artist or a classic artwork character), otherwise the battle cannot be generated successfully!"></textarea>
+            <textarea id="prompt-a-weapon" data-player="a" data-type="weapon" placeholder="Describe your custom weapon prompt here... Do not mention specific names (such as a famous artist or a classic artwork character), otherwise the battle cannot be generated successfully!"></textarea>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel b" data-player-panel="b">
+        <div class="panel-head">
+          <h4 class="player-name"><span class="dot"></span>PLAYER B <span class="medals" id="medals-b" aria-label="Player B win streak"></span></h4>
+          <span class="status" id="status-b">Not Ready</span>
+        </div>
+
+        <h5 class="section-label">Choose Character</h5>
+        <div class="rail" id="cards-b-char">
+          <button class="card" data-player="b" data-type="char" data-name="Bounty Hunter" data-desc="A disciplined fighter with heavy targeting gear."><img src="../../assets/static/赏金猎人.png" alt="Bounty Hunter"><span class="check">✓</span><span class="card-name">Bounty Hunter</span></button>
+          <button class="card" data-player="b" data-type="char" data-name="Iron Brawler" data-desc="A pressure fighter with high durability."><img src="../../assets/static/铁拳战士.png" alt="Iron Brawler"><span class="check">✓</span><span class="card-name">Iron Brawler</span></button>
+          <button class="card" data-player="b" data-type="char" data-name="Mecha Ronin" data-desc="A red-lit cyber samurai in plated armor."><img src="../../assets/static/机械人.png" alt="Mecha Ronin"><span class="check">✓</span><span class="card-name">Mecha Ronin</span></button>
+          <button class="card" data-player="b" data-type="char" data-name="Thunder Mage" data-desc="A ranged caster charged with unstable lightning."><img src="../../assets/static/雷电法师.png" alt="Thunder Mage"><span class="check">✓</span><span class="card-name">Thunder Mage</span></button>
+          <button class="card" data-player="b" data-type="char" data-name="Rage Brute" data-desc="A massive beast-like bruiser with raw impact."><img src="../../assets/static/狂暴兽人.png" alt="Rage Brute"><span class="check">✓</span><span class="card-name">Rage Brute</span></button>
+          <button class="card" data-player="b" data-type="char" data-name="Shadow Assassin" data-desc="A silent rogue AI wrapped in black tactical fabric."><img src="../../assets/static/暗影刺客.png" alt="Shadow Assassin"><span class="check">✓</span><span class="card-name">Shadow Assassin</span></button>
+        </div>
+
+        <h5 class="section-label">Choose Weapon</h5>
+        <div class="rail" id="cards-b-weapon">
+          <button class="card" data-player="b" data-type="weapon" data-name="Thunder Staff" data-desc="A fast electric weapon that chains attacks."><img src="../../assets/static/双截棍.png" alt="Thunder Staff"><span class="check">✓</span><span class="card-name">Nunchaku</span></button>
+          <button class="card" data-player="b" data-type="weapon" data-name="Holy Sword" data-desc="A balanced melee weapon with clean reach."><img src="../../assets/static/圣剑.png" alt="Holy Sword"><span class="check">✓</span><span class="card-name">Holy Sword</span></button>
+          <button class="card" data-player="b" data-type="weapon" data-name="Machete" data-desc="A brutal close-range blade with high pressure."><img src="../../assets/static/砍刀.png" alt="Machete"><span class="check">✓</span><span class="card-name">Machete</span></button>
+          <button class="card" data-player="b" data-type="weapon" data-name="Assault Rifle" data-desc="A flexible mid-range weapon with sustained fire."><img src="../../assets/static/突击步枪.png" alt="Assault Rifle"><span class="check">✓</span><span class="card-name">Assault Rifle</span></button>
+          <button class="card" data-player="b" data-type="weapon" data-name="Quantum Cannon" data-desc="A long-range energy cannon with superior burst damage."><img src="../../assets/static/量子聚能炮.png" alt="Quantum Cannon"><span class="check">✓</span><span class="card-name">Quantum Cannon</span></button>
+          <button class="card" data-player="b" data-type="weapon" data-name="Rocket Launcher" data-desc="A destructive heavy weapon with area pressure."><img src="../../assets/static/火箭筒.png" alt="Rocket Launcher"><span class="check">✓</span><span class="card-name">Rocket</span></button>
+        </div>
+
+        <div class="custom-box">
+          <div class="tabs">
+            <button class="tab active" type="button" data-tab="b-char">Custom Character</button>
+            <button class="tab" type="button" data-tab="b-weapon">Custom Weapon</button>
+          </div>
+          <div class="prompt-wrap">
+            <textarea class="active" id="prompt-b-char" data-player="b" data-type="char" placeholder="Describe your custom fighter prompt here... Do not mention specific names (such as a famous artist or a classic artwork character), otherwise the battle cannot be generated successfully!"></textarea>
+            <textarea id="prompt-b-weapon" data-player="b" data-type="weapon" placeholder="Describe your custom weapon prompt here... Do not mention specific names (such as a famous artist or a classic artwork character), otherwise the battle cannot be generated successfully!"></textarea>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <section class="library hidden-view" id="libraryView" aria-label="Generated asset library">
+    <div class="library-head">
+      <div>
+        <p class="library-kicker">Generation Archive</p>
+        <h2 class="library-title">Asset Library</h2>
+        <p class="library-subtitle">Review every arena battle, inspect each AI step, download assets, and reuse prompts.</p>
+      </div>
+      <div class="library-actions">
+        <span class="library-count" id="libraryCount">0 Records</span>
+        <button class="asset-btn danger" type="button" id="deleteSelectedLibrary" disabled>Delete Selected</button>
+        <button class="asset-btn primary" type="button" id="refreshLibrary">Refresh</button>
+      </div>
+    </div>
+    <div class="library-grid" id="libraryGrid"></div>
+  </section>
+
+  <footer class="footer" id="battleFooter">
+    <div class="footer-inner">
+      <button class="start" id="startBattle" type="button"><span>Start Battle</span></button>
+      <div class="fineprint">
+        <span>© 2026 AI ARENA DUEL | CREATED BY GZY</span>
+        <nav class="links" aria-label="Footer links"><a href="#">Terms</a><a href="#">Discord</a><a href="#">Support</a></nav>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal warning" id="warningModal" role="dialog" aria-modal="true" aria-labelledby="warningTitle">
+    <div class="dialog">
+      <h3 id="warningTitle">Configuration Error</h3>
+      <p id="warningMessage">Both fighters require a character and weapon selection before initiating a duel.</p>
+      <div class="actions" style="margin-top:24px;"><button class="action" type="button" data-close-warning>Acknowledge</button></div>
+    </div>
+  </div>
+
+  <div class="modal loading" id="loadingModal" role="dialog" aria-modal="true" aria-labelledby="loadingTitle">
+    <div class="dialog">
+      <h3 id="loadingTitle">Generating</h3>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="loading-meta">
+        <span id="loadingStage">Stage 0/4 · Compiling prompts...</span>
+        <span class="elapsed-time" id="elapsedTime">00:00</span>
+      </div>
+      <p>Generating battle image, judging the matchup, then rendering the final duel video. This may take a few minutes.</p>
+    </div>
+  </div>
+
+  <div class="modal result" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="dialog">
+      <h2 id="resultTitle">Player A Victorious</h2>
+      <div class="result-grid">
+        <div id="resultLeft" style="color:var(--red)">PLAYER A</div>
+        <div style="color:var(--muted)">VS</div>
+        <div id="resultRight" style="color:var(--blue)">PLAYER B</div>
+      </div>
+      <div class="reason">
+        <h4>Post-Match Brief</h4>
+        <p id="resultReason">Player A wins. View the asset library after exiting for detailed analysis and saved generation assets.</p>
+      </div>
+      <div class="actions">
+        <button class="action primary" type="button" id="holdArena">Continue</button>
+        <button class="action" type="button" id="viewBattleDetail">View Battle Details</button>
+        <button class="action" type="button" id="exitGame">Exit Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal lightbox" id="assetLightbox" role="dialog" aria-modal="true" aria-label="Asset preview">
+    <div class="dialog">
+      <div class="lightbox-head">
+        <span id="lightboxTitle">Asset Preview</span>
+        <button class="icon-action" type="button" data-close-lightbox aria-label="Close preview">
+          <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <img id="lightboxImage" src="" alt="Expanded asset preview">
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      locked: false,
+      winner: "a",
+      currentJob: null,
+      activeView: "lobby",
+      libraryRecords: [],
+      selectedLibraryId: null,
+      selectedLibraryIds: new Set(),
+      streaks: { a: 0, b: 0 },
+      selections: {
+        a: { char: null, weapon: null },
+        b: { char: null, weapon: null }
+      }
+    };
+
+    const arena = document.getElementById("arena");
+    const arenaVideo = document.getElementById("arenaVideo");
+    const arenaTitle = document.getElementById("arenaTitle");
+    const arenaSubtitle = document.getElementById("arenaSubtitle");
+    const startBattle = document.getElementById("startBattle");
+    const warningModal = document.getElementById("warningModal");
+    const warningTitle = document.getElementById("warningTitle");
+    const warningMessage = document.getElementById("warningMessage");
+    const loadingModal = document.getElementById("loadingModal");
+    const resultModal = document.getElementById("resultModal");
+    const assetLightbox = document.getElementById("assetLightbox");
+    const lightboxImage = document.getElementById("lightboxImage");
+    const lightboxTitle = document.getElementById("lightboxTitle");
+    const progressBar = document.getElementById("progressBar");
+    const loadingStage = document.getElementById("loadingStage");
+    const elapsedTime = document.getElementById("elapsedTime");
+    const arenaImage = document.getElementById("arenaImage");
+    const lobbyView = document.getElementById("lobbyView");
+    const libraryView = document.getElementById("libraryView");
+    const battleFooter = document.getElementById("battleFooter");
+    const libraryGrid = document.getElementById("libraryGrid");
+    const libraryCount = document.getElementById("libraryCount");
+    const refreshLibrary = document.getElementById("refreshLibrary");
+    const deleteSelectedLibrary = document.getElementById("deleteSelectedLibrary");
+    const API_BASE = location.protocol === "file:" ? "http://127.0.0.1:8787" : "";
+    const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
+    const LIBRARY_STORAGE_KEY = "ai-arena-duel-library";
+
+    const stages = [
+      "Stage 1/4 · Generating battle image...",
+      "Stage 2/4 · Evaluating matchup result...",
+      "Stage 3/4 · Rendering final duel video...",
+      "Stage 4/4 · Finalizing duel result..."
+    ];
+    let battleFallbackTimer = null;
+
+    const stageLabels = {
+      queued: "Stage 0/4 · Queued for generation...",
+      image_generating: "Stage 1/4 · Generating battle image...",
+      judge_running: "Stage 2/4 · Evaluating matchup result...",
+      video_generating: "Stage 3/4 · Rendering final duel video...",
+      completed: "Stage 4/4 · Finalizing duel result...",
+      failed: "Generation failed"
+    };
+
+    function getPrompt(player, type) {
+      return document.getElementById(`prompt-${player}-${type}`).value.trim();
+    }
+
+    function hasInput(player, type) {
+      return Boolean(state.selections[player][type] || getPrompt(player, type));
+    }
+
+    function playerReady(player) {
+      return hasInput(player, "char") && hasInput(player, "weapon");
+    }
+
+    function renderMedals() {
+      ["a", "b"].forEach(player => {
+        const count = Math.max(0, Math.min(5, state.streaks[player] || 0));
+        document.getElementById(`medals-${player}`).innerHTML = Array.from({ length: count }, () => `<span class="medal"></span>`).join("");
+      });
+    }
+
+    function updateStatus() {
+      ["a", "b"].forEach(player => {
+        const badge = document.getElementById(`status-${player}`);
+        const ready = playerReady(player);
+        badge.textContent = ready ? (badge.dataset.holding === "true" ? "Holding" : "Ready") : "Not Ready";
+        badge.classList.toggle("ready", ready);
+      });
+
+      const readyCount = Number(playerReady("a")) + Number(playerReady("b"));
+      startBattle.classList.toggle("ready", readyCount === 2 && !state.locked);
+      if (state.locked) return;
+
+      arena.dataset.mode = "waiting";
+      arenaVideo.src = "../../assets/static/等待玩家进入视频.mp4";
+      arenaVideo.loop = true;
+      arenaVideo.play().catch(() => {});
+      arenaTitle.textContent = "Waiting For Players";
+      arenaSubtitle.textContent = `Waiting for ${2 - readyCount} player${2 - readyCount === 1 ? "" : "s"} to join`;
+    }
+
+    function clearCategory(player, type) {
+      document.querySelectorAll(`[data-player="${player}"][data-type="${type}"]`).forEach(card => card.classList.remove("selected"));
+      state.selections[player][type] = null;
+    }
+
+    function setPromptDisabled(player, type, disabled) {
+      const input = document.getElementById(`prompt-${player}-${type}`);
+      input.disabled = disabled || state.locked;
+    }
+
+    function syncInputLocks() {
+      ["a", "b"].forEach(player => {
+        ["char", "weapon"].forEach(type => {
+          const rail = document.getElementById(`cards-${player}-${type}`);
+          rail.classList.toggle("locked", state.locked || Boolean(getPrompt(player, type)));
+          setPromptDisabled(player, type, Boolean(state.selections[player][type]));
+        });
+      });
+    }
+
+    function selectCard(card) {
+      if (state.locked) return;
+      const player = card.dataset.player;
+      const type = card.dataset.type;
+      const wasSelected = card.classList.contains("selected");
+      document.getElementById(`prompt-${player}-${type}`).value = "";
+      clearCategory(player, type);
+      if (!wasSelected) {
+        card.classList.add("selected");
+        state.selections[player][type] = {
+          name: card.dataset.name,
+          description: card.dataset.desc,
+          assetPath: card.querySelector("img")?.getAttribute("src") || ""
+        };
+      }
+      syncInputLocks();
+      updateStatus();
+    }
+
+    function switchTab(tab) {
+      const [player, type] = tab.dataset.tab.split("-");
+      tab.parentElement.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn === tab));
+      document.getElementById(`prompt-${player}-char`).classList.toggle("active", type === "char");
+      document.getElementById(`prompt-${player}-weapon`).classList.toggle("active", type === "weapon");
+    }
+
+    function handlePrompt(input) {
+      if (state.locked) return;
+      const player = input.dataset.player;
+      const type = input.dataset.type;
+      if (input.value.trim()) clearCategory(player, type);
+      syncInputLocks();
+      updateStatus();
+    }
+
+    function openModal(modal) { modal.classList.add("open"); }
+    function closeModal(modal) { modal.classList.remove("open"); }
+    function showWarning(title, message) {
+      warningTitle.textContent = title;
+      warningMessage.textContent = message;
+      openModal(warningModal);
+    }
+
+    function extractReadableApiMessage(raw) {
+      const text = `${raw || ""}`.trim();
+      if (!text) return "";
+      try {
+        const parsed = JSON.parse(text);
+        return parsed?.message || parsed?.Message || parsed?.ErrMsg || parsed?.error?.message || "";
+      } catch {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return parsed?.message || parsed?.Message || parsed?.ErrMsg || parsed?.error?.message || "";
+          } catch {
+            // Keep cleaning the raw text below.
+          }
+        }
+      }
+      return text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .find(line => line && !/^Command failed:/i.test(line) && !/^at\s+/i.test(line)) || text;
+    }
+
+    function formatGenerationErrorMessage(raw) {
+      const reason = extractReadableApiMessage(raw)
+        .replace(/\s+/g, " ")
+        .replace(/^Error:\s*/i, "")
+        .trim();
+      const concise = reason
+        ? (reason.length > 180 ? `${reason.slice(0, 177)}...` : reason)
+        : "the generation service did not provide a detailed reason";
+      return `Generation failed: ${concise}. ${generationErrorAdvice(classifyGenerationError(concise))}`;
+    }
+
+    function classifyGenerationError(reason) {
+      const text = `${reason || ""}`.toLowerCase();
+      if (/balance|insufficient|quota|credit|credits|billing|bill|payment|recharge|余额|额度|欠费|充值|点数/.test(text)) return "billing";
+      if (/api[-_ ]?key|token|auth|unauthori[sz]ed|forbidden|permission|credential|login|sign in|401|403|鉴权|认证|登录|权限/.test(text)) return "auth";
+      if (/rate limit|too many requests|throttle|429|频率|限流|请求过多/.test(text)) return "rate_limit";
+      if (/moderation|safety|safe|policy|violation|copyright|watermark|logo|celebrity|famous|artist|character|blocked|rejected|unsafe|审核|违规|敏感|版权|水印|商标|名人/.test(text)) return "content";
+      if (/timeout|timed out|network|econn|socket|dns|connect|connection|unreachable|超时|网络|连接/.test(text)) return "network";
+      if (/server|internal|unavailable|maintenance|busy|5\d\d|服务|维护|繁忙/.test(text)) return "service";
+      return "unknown";
+    }
+
+    function generationErrorAdvice(kind) {
+      const advice = {
+        billing: "Please check the PixVerse/API account balance, credits, billing status, or quota, then retry after recharging or restoring access.",
+        auth: "Please check the API key, PixVerse CLI login status, account permissions, and environment configuration, then retry.",
+        rate_limit: "Please wait a moment before retrying, or reduce concurrent generation requests if multiple jobs are running.",
+        content: "Please revise or re-upload compliant materials. Avoid specific real people, famous artists, copyrighted characters, logos, watermarks, or unsafe content.",
+        network: "Please check the network connection and service availability, then retry. If the issue repeats, try again after the connection is stable.",
+        service: "The generation service may be temporarily unavailable or busy. Please retry later.",
+        unknown: "Please review the submitted materials, account status, and service configuration, then try again."
+      };
+      return advice[kind] || advice.unknown;
+    }
+
+    function lockConfig(locked) {
+      state.locked = locked;
+      document.querySelectorAll(".card, .tab, textarea").forEach(el => {
+        if (el.matches("textarea")) el.disabled = locked || Boolean(state.selections[el.dataset.player][el.dataset.type]);
+        else el.disabled = locked;
+      });
+      syncInputLocks();
+      startBattle.classList.toggle("ready", !locked && playerReady("a") && playerReady("b"));
+    }
+
+    function selectedName(player, type) {
+      const custom = getPrompt(player, type);
+      if (custom) return custom.split(/[,.]/)[0].slice(0, 22) || "Custom";
+      return state.selections[player][type]?.name || "Custom";
+    }
+
+    function inputPayload(player, type) {
+      const prompt = getPrompt(player, type);
+      if (prompt) {
+        return { mode: "custom", prompt };
+      }
+      const selected = state.selections[player][type];
+      return {
+        mode: "preset",
+        name: selected.name,
+        description: selected.description,
+        assetPath: selected.assetPath
+      };
+    }
+
+    function buildBattlePayload() {
+      return {
+        players: {
+          left: {
+            character: inputPayload("a", "char"),
+            weapon: inputPayload("a", "weapon")
+          },
+          right: {
+            character: inputPayload("b", "char"),
+            weapon: inputPayload("b", "weapon")
+          }
+        }
+      };
+    }
+
+    async function createBattle(payload) {
+      const response = await fetch(`${API_BASE}/api/battles`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body?.error?.message || "Battle generation failed.");
+      }
+      return body;
+    }
+
+    async function getBattle(id) {
+      const response = await fetch(`${API_BASE}/api/battles/${id}`);
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body?.error?.message || "Unable to read battle status.");
+      }
+      return body;
+    }
+
+    async function getLibrary() {
+      const response = await fetch(`${API_BASE}/api/library`);
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body?.error?.message || "Unable to read asset library.");
+      }
+      return body.records || [];
+    }
+
+    async function deleteLibraryRecords(ids) {
+      const list = ids.map(id => `${id}`.trim()).filter(Boolean);
+      if (!list.length) return { deleted: 0 };
+      const response = await fetch(`${API_BASE}/api/library`, {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids: list })
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body?.error?.message || "Unable to delete library records.");
+      }
+      return body;
+    }
+
+    function compactResult(result) {
+      if (!result) return null;
+      const copy = { ...result };
+      delete copy.command;
+      delete copy.stdout;
+      delete copy.stderr;
+      delete copy.sourcePath;
+      return copy;
+    }
+
+    function readLocalLibrary() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(LIBRARY_STORAGE_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function writeLocalLibrary(records) {
+      try {
+        localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(records.slice(0, 100)));
+      } catch {
+        // Local storage is a convenience cache; generation flow should never fail because of it.
+      }
+    }
+
+    function removeLocalLibraryRecords(ids) {
+      const idSet = new Set(ids.map(id => `${id}`));
+      writeLocalLibrary(readLocalLibrary().filter(record => !idSet.has(`${record.id || ""}`)));
+    }
+
+    function mergeLibraryRecords(...groups) {
+      const map = new Map();
+      groups.flat().filter(Boolean).forEach(record => {
+        if (!record?.id) return;
+        map.set(record.id, { ...map.get(record.id), ...record });
+      });
+      return [...map.values()].sort((a, b) => {
+        const timeA = new Date(a.completedAt || a.createdAt || 0).getTime();
+        const timeB = new Date(b.completedAt || b.createdAt || 0).getTime();
+        return timeB - timeA;
+      }).slice(0, 100);
+    }
+
+    function buildLibraryRecord(job) {
+      const image = compactResult(job.result?.image);
+      const judge = compactResult(job.result?.judge);
+      const video = compactResult(job.result?.video);
+      return {
+        id: job.id || `local-${Date.now()}`,
+        createdAt: job.createdAt || new Date().toISOString(),
+        completedAt: job.updatedAt || new Date().toISOString(),
+        title: `Battle ${formatTime(job.createdAt || new Date().toISOString())}`,
+        input: job.input,
+        assets: {
+          arenaBackground: {
+            label: "Fixed arena background",
+            imageUrl: "../../assets/static/格斗擂台背景底图.png"
+          },
+          seedreamImage: image,
+          qwenJudge: judge,
+          pixverseVideo: video
+        },
+        prompts: {
+          seedream: image?.prompt || "",
+          qwen: "",
+          pixverse: video?.prompt || ""
+        },
+        providers: {
+          image: image?.provider || "unknown",
+          judge: judge?.provider || "unknown",
+          video: video?.provider || "unknown"
+        }
+      };
+    }
+
+    function saveBattleToLocalLibrary(job) {
+      if (!job?.result) return;
+      try {
+        const record = buildLibraryRecord(job);
+        const nextRecords = mergeLibraryRecords([record], readLocalLibrary());
+        writeLocalLibrary(nextRecords);
+        state.libraryRecords = mergeLibraryRecords(nextRecords, state.libraryRecords);
+      } catch {
+        // Asset persistence is best-effort on the client; backend history still records completed battles.
+      }
+    }
+
+    function escapeHtml(value) {
+      return `${value ?? ""}`.replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, "&#96;");
+    }
+
+    function shortText(value, limit = 210) {
+      const text = `${value || ""}`.replace(/\s+/g, " ").trim();
+      if (!text) return "Not generated yet";
+      return text.length > limit ? `${text.slice(0, limit - 3)}...` : text;
+    }
+
+    function formatTime(value) {
+      if (!value) return "Unknown time";
+      return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }).format(new Date(value));
+    }
+
+    function formatInput(input) {
+      if (!input) return "Unset";
+      if (input.mode === "custom") return `Custom: ${shortText(input.prompt, 90)}`;
+      return input.name || "Preset";
+    }
+
+    function assetUrl(asset, keys) {
+      for (const key of keys) {
+        if (asset?.[key]) return asset[key];
+      }
+      return "";
+    }
+
+    function iconSvg(type) {
+      if (type === "copy") return `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+      if (type === "download") return `<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>`;
+      if (type === "expand") return `<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>`;
+      return `<svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>`;
+    }
+
+    function downloadIcon(urls, label) {
+      const list = (Array.isArray(urls) ? urls : [urls]).filter(Boolean);
+      if (!list.length) return "";
+      return `<button class="icon-action" type="button" data-download-urls="${escapeAttr(JSON.stringify(list))}" data-download-label="${escapeAttr(label)}" aria-label="Download ${escapeAttr(label)}" title="Download">${iconSvg("download")}</button>`;
+    }
+
+    function copyIcon(text, label) {
+      if (!text) return "";
+      return `<button class="icon-action" type="button" data-copy-text="${escapeAttr(text)}" aria-label="Copy ${escapeAttr(label)}" title="Copy">${iconSvg("copy")}</button>`;
+    }
+
+    function expandIcon() {
+      return `<button class="icon-action" type="button" data-toggle-text aria-label="Expand or collapse" title="Expand / collapse">${iconSvg("expand")}</button>`;
+    }
+
+    function inputAsset(input) {
+      return input?.assetPath || input?.referenceImageUrl || "";
+    }
+
+    function thumbItem(url, label, fallbackText = "") {
+      if (!url) {
+        return `<div class="thumb-item"><div class="thumb-placeholder">${escapeHtml(fallbackText || label || "No image")}</div></div>`;
+      }
+      return `
+        <div class="thumb-item">
+          <button type="button" data-view-image="${escapeAttr(url)}" data-view-title="${escapeAttr(label)}" aria-label="Open ${escapeAttr(label)}">
+            <img src="${escapeAttr(url)}" alt="${escapeAttr(label)}">
+          </button>
+          <span class="thumb-caption">${escapeHtml(label)}</span>
+        </div>
+      `;
+    }
+
+    function thumbBox(title, items, single = false) {
+      return `
+        <div class="thumb-box">
+          <div class="box-head">
+            <span class="box-title">${escapeHtml(title)}</span>
+            <span class="box-actions">${downloadIcon(items.map(item => item.url), title)}</span>
+          </div>
+          <div class="thumb-grid ${single ? "single" : ""}">
+            ${items.map(item => thumbItem(item.url, item.label, item.fallback)).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function textBox(title, text) {
+      return `
+        <div class="text-box">
+          <div class="box-head">
+            <span class="box-title">${escapeHtml(title)}</span>
+            <span class="box-actions">${copyIcon(text, title)}${expandIcon()}</span>
+          </div>
+          <div class="text-content">${escapeHtml(text || "Not generated yet")}</div>
+        </div>
+      `;
+    }
+
+    function playerColumn(side, player, input, imageUrl, analysisText, isWinner) {
+      const accentClass = side === "a" ? "a" : "b";
+      const char = input?.character || {};
+      const weapon = input?.weapon || {};
+      return `
+        <div class="asset-player ${accentClass}">
+          ${isWinner ? `<span class="winner-crown" aria-hidden="true">♛</span>` : ""}
+          <h4>${escapeHtml(player)}</h4>
+          <p>Character: ${escapeHtml(formatInput(char))}</p>
+          <p>Weapon: ${escapeHtml(formatInput(weapon))}</p>
+          <div class="asset-section-grid">
+            ${thumbBox("Base Image", [{ url: imageUrl, label: "Base Image", fallback: "Generated image pending" }], true)}
+            ${thumbBox("Input Cards", [
+              { url: inputAsset(char), label: "Character", fallback: formatInput(char) },
+              { url: inputAsset(weapon), label: "Weapon", fallback: formatInput(weapon) }
+            ])}
+            ${textBox("Post-Match Analysis", analysisText)}
+          </div>
+        </div>
+      `;
+    }
+
+    function getRecordDetailData(record) {
+      const assets = record.assets || {};
+      const imageUrl = assetUrl(assets.seedreamImage, ["imageUrl", "url"]);
+      const videoUrl = assetUrl(assets.pixverseVideo, ["videoUrl", "url"]);
+      const coverUrl = assetUrl(assets.pixverseVideo, ["coverUrl"]) || imageUrl || assetUrl(assets.arenaBackground, ["imageUrl", "url"]);
+      const backgroundUrl = assetUrl(assets.arenaBackground, ["imageUrl", "url"]);
+      const baseImageUrl = imageUrl || backgroundUrl;
+      const judge = assets.qwenJudge || {};
+      const winner = judge.winnerSide === "left" ? "Player A" : judge.winnerSide === "right" ? "Player B" : "Pending";
+      const loser = judge.winnerSide === "left" ? "Player B" : judge.winnerSide === "right" ? "Player A" : "Pending";
+      const input = record.input?.players || {};
+      const leftAnalysis = judge.playerAAnalysis || `${winner} wins. ${loser} loses. Player A should review character and equipment synergy for the next duel.`;
+      const rightAnalysis = judge.playerBAnalysis || `${winner} wins. ${loser} loses. Player B should review character and equipment synergy for the next duel.`;
+      return { assets, imageUrl, videoUrl, coverUrl, backgroundUrl, baseImageUrl, judge, winner, loser, input, leftAnalysis, rightAnalysis };
+    }
+
+    function recordId(record) {
+      return `${record?.id || ""}`;
+    }
+
+    function syncDeleteButton() {
+      const count = state.selectedLibraryIds.size;
+      deleteSelectedLibrary.disabled = count === 0;
+      deleteSelectedLibrary.textContent = count > 0 ? `Delete ${count} Selected` : "Delete Selected";
+    }
+
+    function renderRecordSummary(record) {
+      const data = getRecordDetailData(record);
+      const left = data.input.left || {};
+      const right = data.input.right || {};
+      const id = recordId(record);
+      const selected = state.selectedLibraryIds.has(id);
+      return `
+        <article class="record-card ${selected ? "selected" : ""}">
+          <label class="record-select">
+            <input type="checkbox" data-select-record="${escapeAttr(id)}" ${selected ? "checked" : ""}>
+            <span>Select</span>
+          </label>
+          <button class="record-delete" type="button" data-delete-record="${escapeAttr(id)}">Delete</button>
+          <button class="record-open" type="button" data-open-record="${escapeAttr(id)}">
+            <div class="record-thumb">
+              <img src="${escapeAttr(data.coverUrl || data.backgroundUrl)}" alt="Battle record preview">
+              <span class="record-winner">Winner: ${escapeHtml(data.winner)}</span>
+            </div>
+            <div class="record-body">
+              <h3 class="record-title">${escapeHtml(record.title || "Battle Record")}</h3>
+              <div class="record-meta">
+                <span>${escapeHtml(formatTime(record.completedAt || record.createdAt))}</span>
+                <span><span class="record-side">Player A</span>${escapeHtml(formatInput(left.character))} / ${escapeHtml(formatInput(left.weapon))}</span>
+                <span><span class="record-side">Player B</span>${escapeHtml(formatInput(right.character))} / ${escapeHtml(formatInput(right.weapon))}</span>
+              </div>
+            </div>
+          </button>
+        </article>
+      `;
+    }
+
+    function renderRecordDetail(record) {
+      const { videoUrl, coverUrl, baseImageUrl, judge, input, leftAnalysis, rightAnalysis } = getRecordDetailData(record);
+      const id = recordId(record);
+      return `
+        <div class="detail-actions">
+          <button class="asset-btn detail-back" type="button" data-back-library>Back To Library</button>
+          <button class="asset-btn danger" type="button" data-delete-record="${escapeAttr(id)}">Delete Record</button>
+        </div>
+        <article class="asset-card">
+          <div class="asset-media">
+            <div class="asset-preview">
+              ${videoUrl ? `<video src="${escapeAttr(videoUrl)}" poster="${escapeAttr(coverUrl)}" muted controls playsinline></video>` : `<img src="${escapeAttr(coverUrl)}" alt="Generated video preview">`}
+              <span class="asset-preview-label">Battle Video</span>
+            </div>
+          </div>
+          <div class="asset-body">
+            <div class="asset-title-row">
+              <h3 class="asset-title">${escapeHtml(record.title || "Battle Record")}</h3>
+              <span class="asset-time">${escapeHtml(formatTime(record.completedAt || record.createdAt))}</span>
+            </div>
+            <div class="asset-columns">
+              ${playerColumn("a", "Player A", input.left, baseImageUrl, leftAnalysis, judge.winnerSide === "left")}
+              ${playerColumn("b", "Player B", input.right, baseImageUrl, rightAnalysis, judge.winnerSide === "right")}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderLibrary(records) {
+      const currentIds = new Set(records.map(recordId));
+      state.selectedLibraryIds.forEach(id => {
+        if (!currentIds.has(id)) state.selectedLibraryIds.delete(id);
+      });
+      libraryCount.textContent = `${records.length} Record${records.length === 1 ? "" : "s"}`;
+      syncDeleteButton();
+      if (!records.length) {
+        state.selectedLibraryId = null;
+        libraryGrid.classList.remove("summary-grid");
+        libraryGrid.innerHTML = `
+          <div class="empty-library">
+            <div>
+              <h3>No Battles Recorded</h3>
+              <p>Complete a duel and the generated image, battle result, final video, prompts, and selected inputs will appear here.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const selectedRecord = records.find(record => `${record.id || ""}` === `${state.selectedLibraryId || ""}`);
+      if (selectedRecord) {
+        libraryGrid.classList.remove("summary-grid");
+        libraryGrid.innerHTML = renderRecordDetail(selectedRecord);
+        return;
+      }
+
+      state.selectedLibraryId = null;
+      libraryGrid.classList.add("summary-grid");
+      libraryGrid.innerHTML = records.map(renderRecordSummary).join("");
+      syncDeleteButton();
+    }
+
+    async function loadLibrary() {
+      refreshLibrary.disabled = true;
+      refreshLibrary.textContent = "Loading";
+      const localRecords = readLocalLibrary();
+      try {
+        if (DEMO_MODE) {
+          const records = mergeLibraryRecords(localRecords, state.libraryRecords);
+          state.libraryRecords = records;
+          writeLocalLibrary(records);
+          renderLibrary(records);
+          return;
+        }
+        const remoteRecords = await getLibrary();
+        const records = mergeLibraryRecords(localRecords, remoteRecords);
+        state.libraryRecords = records;
+        writeLocalLibrary(records);
+        renderLibrary(records);
+      } catch (error) {
+        state.libraryRecords = mergeLibraryRecords(localRecords, state.libraryRecords);
+        renderLibrary(state.libraryRecords);
+      } finally {
+        refreshLibrary.disabled = false;
+        refreshLibrary.textContent = "Refresh";
+      }
+    }
+
+    async function removeLibraryRecords(ids) {
+      const list = ids.map(id => `${id}`.trim()).filter(Boolean);
+      if (!list.length) return;
+      const confirmed = window.confirm(`Delete ${list.length} battle record${list.length === 1 ? "" : "s"}? This cannot be undone.`);
+      if (!confirmed) return;
+
+      deleteSelectedLibrary.disabled = true;
+      refreshLibrary.disabled = true;
+      try {
+        if (!DEMO_MODE) await deleteLibraryRecords(list);
+        removeLocalLibraryRecords(list);
+        const idSet = new Set(list);
+        state.libraryRecords = state.libraryRecords.filter(record => !idSet.has(recordId(record)));
+        list.forEach(id => state.selectedLibraryIds.delete(id));
+        if (idSet.has(`${state.selectedLibraryId || ""}`)) state.selectedLibraryId = null;
+        renderLibrary(state.libraryRecords);
+        showWarning("Record Deleted", `${list.length} battle record${list.length === 1 ? "" : "s"} removed from the asset library.`);
+      } catch (error) {
+        showWarning("Delete Failed", error.message || "Unable to delete the selected battle records.");
+        renderLibrary(state.libraryRecords);
+      } finally {
+        refreshLibrary.disabled = false;
+        syncDeleteButton();
+      }
+    }
+
+    function switchView(view) {
+      state.activeView = view;
+      document.querySelectorAll("[data-view-tab]").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.viewTab === view);
+      });
+      lobbyView.classList.toggle("hidden-view", view !== "lobby");
+      libraryView.classList.toggle("hidden-view", view !== "library");
+      battleFooter.classList.toggle("hidden-view", view !== "lobby");
+      document.title = view === "library" ? "AI ARENA DUEL - Asset Library" : "AI ARENA DUEL - Lobby";
+      if (view === "library") loadLibrary();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function copyPrompt(prompt) {
+      if (!prompt) return;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(prompt);
+        } else {
+          const input = document.createElement("textarea");
+          input.value = prompt;
+          input.style.position = "fixed";
+          input.style.opacity = "0";
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand("copy");
+          input.remove();
+        }
+        showWarning("Prompt Copied", "The prompt has been copied and can be reused in a custom input.");
+      } catch {
+        showWarning("Copy Failed", "Browser clipboard permission blocked the prompt copy.");
+      }
+    }
+
+    function openLightbox(url, title) {
+      if (!url) return;
+      lightboxImage.src = url;
+      lightboxTitle.textContent = title || "Asset Preview";
+      openModal(assetLightbox);
+    }
+
+    function closeLightbox() {
+      closeModal(assetLightbox);
+      lightboxImage.src = "";
+    }
+
+    function filenameFromUrl(url, prefix, index) {
+      const clean = `${url || ""}`.split("?")[0].split("#")[0];
+      const rawName = decodeURIComponent(clean.split("/").pop() || `${prefix}-${index + 1}.png`);
+      return rawName.includes(".") ? rawName : `${rawName}.png`;
+    }
+
+    function downloadAssets(urls, label) {
+      const list = (Array.isArray(urls) ? urls : [urls]).filter(Boolean);
+      list.forEach((url, index) => {
+        setTimeout(() => {
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = filenameFromUrl(url, label || "asset", index);
+          link.rel = "noreferrer";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+        }, index * 160);
+      });
+    }
+
+    function buildDemoBattleJob(payload) {
+      const now = new Date().toISOString();
+      const winnerSide = Math.random() > 0.5 ? "left" : "right";
+      return {
+        id: `demo-${Date.now()}`,
+        status: "completed",
+        stage: "completed",
+        progress: 100,
+        createdAt: now,
+        updatedAt: now,
+        input: payload,
+        result: {
+          image: {
+            imageUrl: "../../assets/static/格斗占位图.png",
+            provider: "frontend_demo"
+          },
+          judge: {
+            winnerSide,
+            summary: `Player ${winnerSide === "left" ? "A" : "B"} wins in frontend demo mode.`,
+            playerAAnalysis: "Frontend demo mode uses local placeholder analysis so the interaction flow can be tested without calling generation APIs.",
+            playerBAnalysis: "Frontend demo mode uses local placeholder analysis so the interaction flow can be tested without calling generation APIs.",
+            provider: "frontend_demo"
+          },
+          video: {
+            videoUrl: "../../assets/static/默认格斗视频.mp4",
+            coverUrl: "../../assets/static/格斗占位图.png",
+            provider: "frontend_demo"
+          }
+        },
+        error: null
+      };
+    }
+
+    function chooseWinner() {
+      const aWeapon = selectedName("a", "weapon").toLowerCase();
+      const bWeapon = selectedName("b", "weapon").toLowerCase();
+      const bHeavy = /cannon|rocket|rifle/.test(bWeapon);
+      const aReach = /sword|staff|nunchaku/.test(aWeapon);
+      state.winner = bHeavy && !aReach ? "b" : (Math.random() > .42 ? "a" : "b");
+      const loser = state.winner === "a" ? "b" : "a";
+      document.getElementById("resultTitle").textContent = `Player ${state.winner.toUpperCase()} Victorious`;
+      document.getElementById("resultLeft").textContent = selectedName("a", "char");
+      document.getElementById("resultRight").textContent = selectedName("b", "char");
+      document.getElementById("resultReason").textContent =
+        `Player ${state.winner.toUpperCase()} wins. Player ${loser.toUpperCase()} loses. Exit the game to review detailed post-match analysis and saved assets in the asset library.`;
+    }
+
+    function applyBattleResult(job) {
+      const judge = job.result?.judge;
+      if (judge?.winnerSide) {
+        state.winner = judge.winnerSide === "left" ? "a" : "b";
+      } else {
+        chooseWinner();
+        return;
+      }
+
+      const loser = state.winner === "a" ? "b" : "a";
+      document.getElementById("resultTitle").textContent = `Player ${state.winner.toUpperCase()} Victorious`;
+      document.getElementById("resultLeft").textContent = selectedName("a", "char");
+      document.getElementById("resultRight").textContent = selectedName("b", "char");
+      const summary = judge.summary || `Player ${state.winner.toUpperCase()} wins. Player ${loser.toUpperCase()} should improve character and equipment synergy next round.`;
+      document.getElementById("resultReason").textContent =
+        `${summary} Exit the game to review detailed post-match analysis and saved assets in the asset library.`;
+    }
+
+    function finishGeneration(job) {
+      if (job) {
+        applyBattleResult(job);
+        saveBattleToLocalLibrary(job);
+        if (state.activeView === "library") loadLibrary();
+      } else {
+        chooseWinner();
+      }
+      closeModal(loadingModal);
+      arena.dataset.mode = "video-ready";
+      arenaVideo.pause();
+      const coverUrl = job?.result?.video?.coverUrl || job?.result?.image?.imageUrl || "../../assets/static/格斗占位图.png";
+      arenaImage.src = coverUrl;
+      arenaVideo.src = job?.result?.video?.videoUrl || "../../assets/static/默认格斗视频.mp4";
+      arenaVideo.poster = coverUrl;
+      arenaVideo.loop = false;
+      arenaVideo.load();
+      arenaVideo.currentTime = 0;
+      arenaTitle.textContent = "Battle Video Ready";
+      arenaSubtitle.textContent = "Press Play Battle to watch the generated duel";
+    }
+
+    async function pollBattle(jobId) {
+      while (true) {
+        const job = await getBattle(jobId);
+        progressBar.style.width = `${job.progress || 0}%`;
+        const progressText = job.progress ? ` · ${job.progress}%` : "";
+        loadingStage.textContent = `${stageLabels[job.stage] || job.stage || "Generating..."}${progressText}`;
+
+        if (job.result?.image?.imageUrl) {
+          arenaImage.src = job.result.image.imageUrl;
+        }
+
+        if (job.status === "completed") {
+          finishGeneration(job);
+          return;
+        }
+
+        if (job.status === "failed") {
+          throw new Error(job.error?.message || "Battle generation failed.");
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 700));
+      }
+    }
+
+    function formatElapsed(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const two = value => String(value).padStart(2, "0");
+      return hours > 0 ? `${two(hours)}:${two(minutes)}:${two(seconds)}` : `${two(minutes)}:${two(seconds)}`;
+    }
+
+    function startElapsedTimer() {
+      const startedAt = Date.now();
+      elapsedTime.textContent = "00:00";
+      return setInterval(() => {
+        elapsedTime.textContent = formatElapsed(Date.now() - startedAt);
+      }, 1000);
+    }
+
+    function runLocalPreviewFallback(job) {
+      return new Promise(resolve => {
+        let progress = 0;
+        const progressTimer = setInterval(() => {
+          progress += 10;
+          progressBar.style.width = `${progress}%`;
+          loadingStage.textContent = DEMO_MODE ? `Frontend demo mode · ${progress}%` : stages[Math.min(stages.length - 1, Math.floor(progress / 28))];
+          if (progress >= 100) {
+            clearInterval(progressTimer);
+            setTimeout(() => {
+              finishGeneration(job);
+              resolve();
+            }, 350);
+          }
+        }, 420);
+      });
+    }
+
+    async function attemptStart() {
+      if (!playerReady("a") || !playerReady("b") || state.locked) {
+        showWarning("Configuration Error", "Both fighters require a character and weapon selection before initiating a duel.");
+        return;
+      }
+
+      lockConfig(true);
+      openModal(loadingModal);
+      progressBar.style.width = "0%";
+      elapsedTime.textContent = "00:00";
+      loadingStage.textContent = stages[0];
+      arena.dataset.mode = "image";
+      arenaTitle.textContent = "Battle Image Ready";
+      arenaSubtitle.textContent = "Preparing the final fight...";
+
+      const elapsedTimer = startElapsedTimer();
+      try {
+        if (DEMO_MODE) {
+          const demoJob = buildDemoBattleJob(buildBattlePayload());
+          state.currentJob = demoJob.id;
+          await runLocalPreviewFallback(demoJob);
+          return;
+        }
+        const job = await createBattle(buildBattlePayload());
+        state.currentJob = job.id;
+        await pollBattle(job.id);
+      } catch (error) {
+        closeModal(loadingModal);
+        lockConfig(false);
+        arena.dataset.mode = "waiting";
+        updateStatus();
+        showWarning("Generation Failed", formatGenerationErrorMessage(error.message));
+      } finally {
+        clearInterval(elapsedTimer);
+      }
+    }
+
+    function playBattle() {
+      arena.dataset.mode = "video";
+      arenaTitle.textContent = "";
+      arenaSubtitle.textContent = "";
+      arenaVideo.currentTime = 0;
+      clearTimeout(battleFallbackTimer);
+      arenaVideo.play().catch(() => {});
+    }
+
+    function viewBattleDetail() {
+      if (!state.currentJob) {
+        showWarning("Battle Detail Unavailable", "No completed battle record is available yet.");
+        return;
+      }
+      closeModal(resultModal);
+      state.selectedLibraryId = state.currentJob;
+      switchView("library");
+    }
+
+    function resetPlayer(player) {
+      ["char", "weapon"].forEach(type => {
+        clearCategory(player, type);
+        document.getElementById(`prompt-${player}-${type}`).value = "";
+      });
+      document.getElementById(`status-${player}`).dataset.holding = "false";
+    }
+
+    function resetArena() {
+      closeModal(resultModal);
+      clearTimeout(battleFallbackTimer);
+      lockConfig(false);
+      arena.dataset.mode = "waiting";
+      arenaVideo.src = "../../assets/static/等待玩家进入视频.mp4";
+      arenaVideo.poster = "";
+      arenaVideo.loop = true;
+      arenaVideo.play().catch(() => {});
+      updateStatus();
+    }
+
+    function continueArena() {
+      const loser = state.winner === "a" ? "b" : "a";
+      state.streaks[state.winner] = Math.min(5, (state.streaks[state.winner] || 0) + 1);
+      state.streaks[loser] = 0;
+      renderMedals();
+      resetPlayer(loser);
+      document.getElementById(`status-${state.winner}`).dataset.holding = "true";
+      resetArena();
+    }
+
+    function exitGame() {
+      resetPlayer("a");
+      resetPlayer("b");
+      state.streaks.a = 0;
+      state.streaks.b = 0;
+      renderMedals();
+      resetArena();
+    }
+
+    document.querySelectorAll(".card").forEach(card => card.addEventListener("click", () => selectCard(card)));
+    document.querySelectorAll(".tab").forEach(tab => tab.addEventListener("click", () => switchTab(tab)));
+    document.querySelectorAll("[data-view-tab]").forEach(tab => tab.addEventListener("click", () => switchView(tab.dataset.viewTab)));
+    document.querySelectorAll("textarea").forEach(input => input.addEventListener("input", () => handlePrompt(input)));
+    document.querySelector("[data-close-warning]").addEventListener("click", () => closeModal(warningModal));
+    document.querySelector("[data-close-lightbox]").addEventListener("click", closeLightbox);
+    assetLightbox.addEventListener("click", event => {
+      if (event.target === assetLightbox) closeLightbox();
+    });
+    refreshLibrary.addEventListener("click", loadLibrary);
+    deleteSelectedLibrary.addEventListener("click", () => removeLibraryRecords([...state.selectedLibraryIds]));
+    libraryGrid.addEventListener("click", event => {
+      const selectBox = event.target.closest("[data-select-record]");
+      if (selectBox) {
+        const id = selectBox.dataset.selectRecord;
+        if (selectBox.checked) state.selectedLibraryIds.add(id);
+        else state.selectedLibraryIds.delete(id);
+        renderLibrary(state.libraryRecords);
+        return;
+      }
+      const deleteButton = event.target.closest("[data-delete-record]");
+      if (deleteButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        removeLibraryRecords([deleteButton.dataset.deleteRecord]);
+        return;
+      }
+      const openRecordButton = event.target.closest("[data-open-record]");
+      if (openRecordButton) {
+        state.selectedLibraryId = openRecordButton.dataset.openRecord;
+        renderLibrary(state.libraryRecords);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const backLibraryButton = event.target.closest("[data-back-library]");
+      if (backLibraryButton) {
+        state.selectedLibraryId = null;
+        renderLibrary(state.libraryRecords);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const downloadButton = event.target.closest("[data-download-urls]");
+      if (downloadButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+          downloadAssets(JSON.parse(downloadButton.dataset.downloadUrls), downloadButton.dataset.downloadLabel);
+        } catch {
+          downloadAssets([], downloadButton.dataset.downloadLabel);
+        }
+        return;
+      }
+      const copyButton = event.target.closest("[data-copy-text]");
+      if (copyButton) {
+        copyPrompt(copyButton.dataset.copyText);
+        return;
+      }
+      const toggleButton = event.target.closest("[data-toggle-text]");
+      if (toggleButton) {
+        toggleButton.closest(".text-box")?.classList.toggle("expanded");
+        return;
+      }
+      const viewButton = event.target.closest("[data-view-image]");
+      if (viewButton) openLightbox(viewButton.dataset.viewImage, viewButton.dataset.viewTitle);
+    });
+    document.getElementById("startBattle").addEventListener("click", attemptStart);
+    document.getElementById("playBattle").addEventListener("click", playBattle);
+    document.getElementById("holdArena").addEventListener("click", continueArena);
+    document.getElementById("viewBattleDetail").addEventListener("click", viewBattleDetail);
+    document.getElementById("exitGame").addEventListener("click", exitGame);
+    arenaVideo.addEventListener("ended", () => {
+      clearTimeout(battleFallbackTimer);
+      if (arena.dataset.mode === "video") openModal(resultModal);
+    });
+
+    document.querySelector('[data-player="a"][data-type="char"]').click();
+    document.querySelector('[data-player="b"][data-type="char"]').click();
+    renderMedals();
+    syncInputLocks();
+    updateStatus();
+  </script>
+</body>
+</html>

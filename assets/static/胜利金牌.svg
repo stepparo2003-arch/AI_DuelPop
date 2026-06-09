@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 120">
+  <defs>
+    <radialGradient id="gold" cx="45%" cy="36%" r="64%">
+      <stop offset="0" stop-color="#fff5a0"/>
+      <stop offset=".34" stop-color="#ffd22f"/>
+      <stop offset=".72" stop-color="#b56b00"/>
+      <stop offset="1" stop-color="#4a2600"/>
+    </radialGradient>
+    <linearGradient id="glove" x1="0" x2="1">
+      <stop offset="0" stop-color="#ff7a28"/>
+      <stop offset=".5" stop-color="#d82716"/>
+      <stop offset="1" stop-color="#6b0707"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-40%" width="160%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#glow)">
+    <path d="M18 61c17-25 31-36 49-41 15-4 31-4 46 0 20 5 36 18 49 41-13 25-29 38-49 43-15 4-31 4-46 0-19-5-34-18-49-43Z" fill="#16110a" opacity=".9"/>
+    <circle cx="90" cy="61" r="46" fill="url(#gold)" stroke="#2a1700" stroke-width="6"/>
+    <path d="M90 25l10 24 26 2-20 16 7 26-23-14-23 14 7-26-20-16 26-2 10-24Z" fill="#fff0a1" stroke="#7a4200" stroke-width="4"/>
+    <path d="M46 54c-12-8-25-4-30 7-5 12 2 24 15 28 13 4 24-2 28-14 3-9-3-16-13-21Z" fill="url(#glove)" stroke="#2a0904" stroke-width="5"/>
+    <path d="M134 54c12-8 25-4 30 7 5 12-2 24-15 28-13 4-24-2-28-14-3-9 3-16 13-21Z" fill="url(#glove)" stroke="#2a0904" stroke-width="5"/>
+    <path d="M59 24c-14 8-22 20-27 34M121 24c14 8 22 20 27 34" fill="none" stroke="#2b2b2b" stroke-width="8" stroke-linecap="round"/>
+    <path d="M54 96h72" stroke="#2a1700" stroke-width="10" stroke-linecap="round"/>
+    <path d="M68 96h44" stroke="#ffc233" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>
