@@ -5,9 +5,10 @@
   "description": "AI Arena Duel web demo with local backend orchestration.",
   "scripts": {
     "dev": "node backend/server.js",
-    "check": "node --check backend/server.js && node --check backend/providers/mockProvider.js && node --check backend/providers/qwenJudgeProvider.js && node --check backend/providers/pixverseVideoProvider.js && node --check backend/providers/pixverseCliProvider.js && node --check backend/prompts.js"
+    "check": "node scripts/check.js",
+    "test": "node --test"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.12.0"
   }
 }

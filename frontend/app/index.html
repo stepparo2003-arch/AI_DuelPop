@@ -1599,6 +1599,7 @@
       if (state.locked) return;
 
       arena.dataset.mode = "waiting";
+      arenaVideo.muted = true;
       arenaVideo.src = "../../assets/static/等待玩家进入视频.mp4";
       arenaVideo.loop = true;
       arenaVideo.play().catch(() => {});
@@ -2107,7 +2108,7 @@
         <article class="asset-card">
           <div class="asset-media">
             <div class="asset-preview">
-              ${videoUrl ? `<video src="${escapeAttr(videoUrl)}" poster="${escapeAttr(coverUrl)}" muted controls playsinline></video>` : `<img src="${escapeAttr(coverUrl)}" alt="Generated video preview">`}
+              ${videoUrl ? `<video src="${escapeAttr(videoUrl)}" poster="${escapeAttr(coverUrl)}" controls playsinline></video>` : `<img src="${escapeAttr(coverUrl)}" alt="Generated video preview">`}
               <span class="asset-preview-label">Battle Video</span>
             </div>
           </div>
@@ -2466,6 +2467,8 @@
       arenaTitle.textContent = "";
       arenaSubtitle.textContent = "";
       arenaVideo.currentTime = 0;
+      arenaVideo.muted = false;
+      arenaVideo.volume = 1;
       clearTimeout(battleFallbackTimer);
       arenaVideo.play().catch(() => {});
     }
@@ -2493,6 +2496,7 @@
       clearTimeout(battleFallbackTimer);
       lockConfig(false);
       arena.dataset.mode = "waiting";
+      arenaVideo.muted = true;
       arenaVideo.src = "../../assets/static/等待玩家进入视频.mp4";
       arenaVideo.poster = "";
       arenaVideo.loop = true;

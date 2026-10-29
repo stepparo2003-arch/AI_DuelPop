@@ -33,14 +33,14 @@ const { imageSystemPrompt, judgeSystemPrompt } = require("./prompts");
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || "127.0.0.1";
-const FRONTEND_FILE = path.join(ROOT_DIR, "frontend", "app", "index.html");
 const GENERATED_DIR = path.join(ROOT_DIR, "backend", "generated");
 const DATA_DIR = path.join(ROOT_DIR, "backend", "data");
 const HISTORY_FILE = process.env.HISTORY_FILE
   ? path.resolve(process.env.HISTORY_FILE)
   : path.join(DATA_DIR, "history.json");
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
-const REQUIRE_REAL_GENERATION = process.env.REQUIRE_REAL_GENERATION === "1";
+const REAL_MODE = process.env.APP_MODE === "real";
+const REQUIRE_REAL_GENERATION = REAL_MODE && process.env.REQUIRE_REAL_GENERATION !== "0";
 
 const jobs = new Map();
 let historyCache = null;
@@ -55,6 +55,9 @@ const mimeTypes = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".mp4": "video/mp4",
+  ".mov": "video/quicktime",
+  ".webm": "video/webm",
+  ".svg": "image/svg+xml",
   ".md": "text/markdown; charset=utf-8"
 };
 
@@ -386,7 +389,10 @@ async function runBattleJob(job, req) {
     updateJob(job, { status: "running", stage: "image_generating", progress: 18 });
     let image;
     try {
-      image = pixverseCliProvider.hasImageConfig()
+      if (REQUIRE_REAL_GENERATION && (!pixverseCliProvider.hasImageConfig() || !pixverseCliProvider.commandExists())) {
+        throw new Error("Real image generation requires an installed and enabled PixVerse CLI.");
+      }
+      image = REAL_MODE && pixverseCliProvider.hasImageConfig()
         ? await pixverseCliProvider.generateBattleImage(job.input, context)
         : await mockProvider.generateBattleImage(job.input, context);
     } catch (imageError) {
@@ -403,10 +409,14 @@ async function runBattleJob(job, req) {
     });
     let judge;
     try {
-      judge = qwenJudgeProvider.hasConfig()
+      if (REQUIRE_REAL_GENERATION && !qwenJudgeProvider.hasConfig()) {
+        throw new Error("Real judging requires DASHSCOPE_API_KEY.");
+      }
+      judge = REAL_MODE && qwenJudgeProvider.hasConfig()
         ? await qwenJudgeProvider.judgeBattle(job.input, image)
         : await mockProvider.judgeBattle(job.input, image);
     } catch (judgeError) {
+      if (REQUIRE_REAL_GENERATION) throw judgeError;
       judge = await mockProvider.judgeBattle(job.input, image);
       judge.provider = "mock_fallback";
       judge.fallbackReason = judgeError.message || "Qwen judge failed.";
@@ -419,9 +429,12 @@ async function runBattleJob(job, req) {
     });
     let video;
     try {
-      video = pixverseCliProvider.hasVideoConfig()
+      if (REQUIRE_REAL_GENERATION && !pixverseCliProvider.hasVideoConfig() && !pixverseVideoProvider.hasConfig()) {
+        throw new Error("Real video generation requires PixVerse CLI or PIXVERSE_API_KEY.");
+      }
+      video = REAL_MODE && pixverseCliProvider.hasVideoConfig()
         ? await pixverseCliProvider.generateBattleVideo(job.input, judge, { ...context, image })
-        : pixverseVideoProvider.hasConfig()
+        : REAL_MODE && pixverseVideoProvider.hasConfig()
         ? await pixverseVideoProvider.generateBattleVideo(job.input, judge, { ...context, image })
         : await mockProvider.generateBattleVideo(job.input, judge, context);
     } catch (videoError) {
@@ -476,12 +489,36 @@ function createBattleJob(payload, req) {
 }
 
 function resolveStaticPath(urlPathname) {
-  const decoded = decodeURIComponent(urlPathname);
-  if (decoded === "/" || decoded === "/index.html") return FRONTEND_FILE;
-  const normalized = path.normalize(decoded).replace(/^(\.\.[/\\])+/, "");
-  const absolute = path.join(ROOT_DIR, normalized);
-  if (!absolute.startsWith(ROOT_DIR)) return null;
-  return absolute;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPathname);
+  } catch {
+    return null;
+  }
+  if (decoded === "/" || decoded === "/index.html") decoded = "/frontend/app/index.html";
+  if (decoded.includes("\\") || decoded.includes("\0") || decoded.split("/").some(segment => segment.startsWith("."))) return null;
+
+  const absolute = path.resolve(ROOT_DIR, `.${decoded}`);
+  const mediaExtensions = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".mp4", ".mov", ".webm"]);
+  const frontendExtensions = new Set([".html", ".css", ".js", ".png", ".jpg", ".svg", ".woff", ".woff2"]);
+  const allowedRoots = [
+    { dir: path.join(ROOT_DIR, "frontend", "app"), extensions: frontendExtensions },
+    { dir: path.join(ROOT_DIR, "assets", "static"), extensions: mediaExtensions },
+    { dir: GENERATED_DIR, extensions: mediaExtensions },
+    { dir: path.join(ROOT_DIR, "docs", "media"), extensions: mediaExtensions }
+  ];
+  const rule = allowedRoots.find(({ dir, extensions }) =>
+    absolute.startsWith(`${dir}${path.sep}`) && extensions.has(path.extname(absolute).toLowerCase())
+  );
+  if (!rule) return null;
+  try {
+    // Reject symlinks that escape the permitted directory, including parent-directory links.
+    const actual = fs.realpathSync(absolute);
+    if (!actual.startsWith(`${rule.dir}${path.sep}`)) return null;
+    return actual;
+  } catch {
+    return null;
+  }
 }
 
 function streamStatic(req, res, filePath) {
@@ -540,15 +577,15 @@ async function handleApi(req, res, url) {
     sendJson(res, 200, {
       ok: true,
       service: "ai-arena-duel",
-      mode: qwenJudgeProvider.hasConfig() ? "qwen-judge" : "mock",
-      judgeProvider: qwenJudgeProvider.hasConfig() ? "qwen" : "mock",
-      imageProvider: pixverseCliProvider.hasImageConfig() ? "pixverse_cli_seedream" : "mock",
-      videoProvider: pixverseCliProvider.hasVideoConfig()
+      mode: REAL_MODE ? "real" : "mock",
+      judgeProvider: REAL_MODE && qwenJudgeProvider.hasConfig() ? "qwen" : "mock",
+      imageProvider: REAL_MODE && pixverseCliProvider.hasImageConfig() ? "pixverse_cli_seedream" : "mock",
+      videoProvider: REAL_MODE && pixverseCliProvider.hasVideoConfig()
         ? "pixverse_cli_v6"
-        : pixverseVideoProvider.hasConfig()
+        : REAL_MODE && pixverseVideoProvider.hasConfig()
         ? "pixverse_api"
         : "mock",
-      pixverseCliAvailable: pixverseCliProvider.commandExists(),
+      pixverseCliAvailable: REAL_MODE && pixverseCliProvider.commandExists(),
       requireRealGeneration: REQUIRE_REAL_GENERATION,
       time: new Date().toISOString()
     });
@@ -677,6 +714,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`AI Arena Duel backend running at http://${HOST}:${PORT}`);
-  console.log(`Frontend: http://${HOST}:${PORT}/frontend/app/index.html`);
+  const listeningPort = server.address().port;
+  console.log(`AI Arena Duel backend running at http://${HOST}:${listeningPort}`);
+  console.log(`Frontend: http://${HOST}:${listeningPort}/frontend/app/index.html`);
 });
