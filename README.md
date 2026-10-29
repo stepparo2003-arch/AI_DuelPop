@@ -4,7 +4,7 @@
 
 > **Mock video — no real AI models were used for generation. For demonstration purposes only.**
 
-[![Watch the AI Arena Duel mock demo](docs/media/ai-arena-mock-demo-poster.jpg)](docs/media/ai-arena-mock-demo.mp4)
+[![AI Arena Duel — full-page mock interface preview](docs/media/ai-arena-full-page.png)](docs/media/ai-arena-mock-demo.mp4)
 
 **[▶ Watch the mock demo (with audio)](docs/media/ai-arena-mock-demo.mp4)** · 63 seconds
 
