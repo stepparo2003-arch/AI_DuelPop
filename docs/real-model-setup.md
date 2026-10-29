@@ -37,11 +37,11 @@ Start with `npm run dev`. `/api/health` reports configured providers; it does no
 - Video: PixVerse CLI `create video`, default model `v6`, using the generated image.
 - This release supports only the PixVerse CLI image/video path. Switching to other video models or providers and calling the PixVerse HTTP video API directly are not supported. Qwen judging uses its separate compatible API.
 
-`PIXVERSE_CLI_IMAGE_COMMAND` and `PIXVERSE_CLI_VIDEO_COMMAND` override command templates. Supported placeholders include `{pixverse}`, `{prompt}`, `{promptFile}`, `{referenceImages}`, `{arenaImage}`, `{inputImage}`, `{outputDir}`, `{outputImage}`, `{outputVideo}`, and `{winnerSide}`. The backend shell-quotes values.
+`PIXVERSE_CLI_IMAGE_COMMAND` and `PIXVERSE_CLI_VIDEO_COMMAND` override command templates. These are advanced escape hatches, not validated support for arbitrary image/video models. The default video duration is 8 seconds in both the CLI command and the prompt in `backend/prompts.js`; edit both if changing duration. Supported placeholders include `{pixverse}`, `{prompt}`, `{promptFile}`, `{referenceImages}`, `{arenaImage}`, `{inputImage}`, `{outputDir}`, `{outputImage}`, `{outputVideo}`, and `{winnerSide}`. The backend shell-quotes values.
 
 ## Known Limits
 
-Cloud judging must receive an accessible image URL or a supported image representation; a `127.0.0.1` URL is not accessible to a remote provider. CLI JSON response formats and generated output locations must also match the adapter. These are integration requirements to validate before describing real generation as working.
+The Qwen adapter uses a non-local remote image URL when available, otherwise reads a local `sourcePath` and sends a Base64 data URL. If neither is available, it falls back to the supplied image URL. A bare `127.0.0.1` URL is not accessible to the cloud provider, and the chosen Qwen model/endpoint must support the submitted image format. CLI JSON response formats and generated output locations must also match the adapter. These are integration requirements to validate before describing real generation as working.
 
 Strict real mode reports image, judge, and video errors as failures. Setting `REQUIRE_REAL_GENERATION=0` allows mock fallback; inspect provider labels in results to distinguish it from real output.
 
