@@ -1,4 +1,4 @@
-# AI Arena Duel 前端设计文档（Google Stitch 生成用）
+# AI DuelPop 前端设计文档（Google Stitch 生成用）
 
 ## 1. 设计目标
 
@@ -71,7 +71,7 @@
 ```text
 ┌──────────────────────────────────────────────┐
 │ 顶部标题区                                    │
-│ AI Arena Duel / 玩法副标题                    │
+│ AI DuelPop / 玩法副标题                    │
 ├──────────────────────────────────────────────┤
 │                                              │
 │              中央擂台展示区                   │
@@ -182,7 +182,7 @@ dark arcade arena background, deep navy and black gradient, red and blue neon gl
 建议文案：
 
 ```text
-AI Arena Duel
+AI DuelPop
 Choose your fighter. Pick your weapon. Let AI decide the battle.
 ```
 
@@ -207,7 +207,7 @@ AI 擂台对决
 ### 5.3 示例布局
 
 ```text
-AI ARENA DUEL        [AIGC Battle Demo]
+AI DUELPOP        [AIGC Battle Demo]
 Choose your fighter. Pick your weapon. Let AI decide the battle.
 ```
 
@@ -1091,12 +1091,12 @@ Stitch 阶段重点完成：
 可将以下内容作为 Google Stitch 的主提示词使用：
 
 ```text
-Create a high-polish responsive web frontend for an AI-powered arena fighting game demo called "AI Arena Duel".
+Create a high-polish responsive web frontend for an AI-powered arena fighting game demo called "AI DuelPop".
 
 The page should feel like a 90s retro arcade side-scrolling fighting game lobby with a modern AIGC product interface. Use a dark neon visual style with red and blue player accents, bold contrast, glassmorphism cards, glowing borders, and a dramatic central arena display.
 
 The layout should be a single-page web app:
-1. Top header with title "AI Arena Duel" and subtitle "Choose your fighter. Pick your weapon. Let AI decide the battle."
+1. Top header with title "AI DuelPop" and subtitle "Choose your fighter. Pick your weapon. Let AI decide the battle."
 2. A large central 16:9 arena display area for waiting video, battle image, or battle video.
 3. Two player configuration panels below: Player A / Left Side and Player B / Right Side.
 4. Each player panel includes character card selection, custom character prompt input, character reference upload, weapon card selection, custom weapon prompt input, and weapon reference upload.

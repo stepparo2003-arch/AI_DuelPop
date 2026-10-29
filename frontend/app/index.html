@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI ARENA DUEL - Lobby</title>
+  <title>AI DUELPOP - Lobby</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Sora:wght@600;700;800&display=swap");
 
@@ -1310,7 +1310,7 @@
   <div class="scanlines" aria-hidden="true"></div>
 
   <header class="appbar">
-    <h1 class="brand">AI ARENA DUEL</h1>
+    <h1 class="brand">AI DUELPOP</h1>
     <nav class="top-tabs" aria-label="Primary views">
       <button class="top-tab active" type="button" data-view-tab="lobby">Battle Lobby</button>
       <button class="top-tab" type="button" data-view-tab="library">Asset Library</button>
@@ -1448,7 +1448,7 @@
     <div class="footer-inner">
       <button class="start" id="startBattle" type="button"><span>Start Battle</span></button>
       <div class="fineprint">
-        <span>© 2026 AI ARENA DUEL | CREATED BY GZY</span>
+        <span>© 2026 AI DUELPOP | CREATED BY GZY</span>
         <nav class="links" aria-label="Footer links"><a href="#">Terms</a><a href="#">Discord</a><a href="#">Support</a></nav>
       </div>
     </div>
@@ -1548,7 +1548,9 @@
     const deleteSelectedLibrary = document.getElementById("deleteSelectedLibrary");
     const API_BASE = location.protocol === "file:" ? "http://127.0.0.1:8787" : "";
     const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
-    const LIBRARY_STORAGE_KEY = "ai-arena-duel-library";
+    const LIBRARY_STORAGE_KEY = "ai-duelpop-library";
+    // Keep existing local battle records when upgrading from the previous name.
+    const LEGACY_LIBRARY_STORAGE_KEY = "ai-arena-duel-library";
 
     const stages = [
       "Stage 1/4 · Generating battle image...",
@@ -1831,7 +1833,12 @@
 
     function readLocalLibrary() {
       try {
-        const parsed = JSON.parse(localStorage.getItem(LIBRARY_STORAGE_KEY) || "[]");
+        let stored = localStorage.getItem(LIBRARY_STORAGE_KEY);
+        if (stored === null) {
+          stored = localStorage.getItem(LEGACY_LIBRARY_STORAGE_KEY);
+          if (stored !== null) localStorage.setItem(LIBRARY_STORAGE_KEY, stored);
+        }
+        const parsed = JSON.parse(stored || "[]");
         return Array.isArray(parsed) ? parsed : [];
       } catch {
         return [];
@@ -2220,7 +2227,7 @@
       lobbyView.classList.toggle("hidden-view", view !== "lobby");
       libraryView.classList.toggle("hidden-view", view !== "library");
       battleFooter.classList.toggle("hidden-view", view !== "lobby");
-      document.title = view === "library" ? "AI ARENA DUEL - Asset Library" : "AI ARENA DUEL - Lobby";
+      document.title = view === "library" ? "AI DUELPOP - Asset Library" : "AI DUELPOP - Lobby";
       if (view === "library") loadLibrary();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }

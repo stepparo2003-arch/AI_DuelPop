@@ -1,5 +1,5 @@
 ---
-name: Cyber-Arena Duelist
+name: AI DuelPop
 colors:
   surface: '#12131a'
   surface-dim: '#12131a'

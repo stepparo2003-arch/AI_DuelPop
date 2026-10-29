@@ -5,7 +5,7 @@
 ### 1.1 产品名称
 
 双人 AIGC 角色装备擂台战  
-英文暂定：AI Arena Duel
+产品名称：AI DuelPop
 
 ### 1.2 产品定位
 
@@ -98,7 +98,7 @@
 建议文案：
 
 ```text
-AI Arena Duel
+AI DuelPop
 Choose your fighter. Pick your weapon. Let AI decide the battle.
 ```
 

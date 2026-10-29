@@ -27,7 +27,6 @@ loadEnvFile();
 
 const mockProvider = require("./providers/mockProvider");
 const qwenJudgeProvider = require("./providers/qwenJudgeProvider");
-const pixverseVideoProvider = require("./providers/pixverseVideoProvider");
 const pixverseCliProvider = require("./providers/pixverseCliProvider");
 const { imageSystemPrompt, judgeSystemPrompt } = require("./prompts");
 
@@ -429,13 +428,11 @@ async function runBattleJob(job, req) {
     });
     let video;
     try {
-      if (REQUIRE_REAL_GENERATION && !pixverseCliProvider.hasVideoConfig() && !pixverseVideoProvider.hasConfig()) {
-        throw new Error("Real video generation requires PixVerse CLI or PIXVERSE_API_KEY.");
+      if (REQUIRE_REAL_GENERATION && !pixverseCliProvider.hasVideoConfig()) {
+        throw new Error("Real video generation requires an enabled PixVerse CLI; other video providers are not supported in this version.");
       }
       video = REAL_MODE && pixverseCliProvider.hasVideoConfig()
         ? await pixverseCliProvider.generateBattleVideo(job.input, judge, { ...context, image })
-        : REAL_MODE && pixverseVideoProvider.hasConfig()
-        ? await pixverseVideoProvider.generateBattleVideo(job.input, judge, { ...context, image })
         : await mockProvider.generateBattleVideo(job.input, judge, context);
     } catch (videoError) {
       if (REQUIRE_REAL_GENERATION) throw videoError;
@@ -576,14 +573,12 @@ async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/health") {
     sendJson(res, 200, {
       ok: true,
-      service: "ai-arena-duel",
+      service: "ai-duelpop",
       mode: REAL_MODE ? "real" : "mock",
       judgeProvider: REAL_MODE && qwenJudgeProvider.hasConfig() ? "qwen" : "mock",
       imageProvider: REAL_MODE && pixverseCliProvider.hasImageConfig() ? "pixverse_cli_seedream" : "mock",
       videoProvider: REAL_MODE && pixverseCliProvider.hasVideoConfig()
         ? "pixverse_cli_v6"
-        : REAL_MODE && pixverseVideoProvider.hasConfig()
-        ? "pixverse_api"
         : "mock",
       pixverseCliAvailable: REAL_MODE && pixverseCliProvider.commandExists(),
       requireRealGeneration: REQUIRE_REAL_GENERATION,
@@ -715,6 +710,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   const listeningPort = server.address().port;
-  console.log(`AI Arena Duel backend running at http://${HOST}:${listeningPort}`);
+  console.log(`AI DuelPop backend running at http://${HOST}:${listeningPort}`);
   console.log(`Frontend: http://${HOST}:${listeningPort}/frontend/app/index.html`);
 });

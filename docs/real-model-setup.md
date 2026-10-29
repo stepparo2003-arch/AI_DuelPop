@@ -35,7 +35,7 @@ Start with `npm run dev`. `/api/health` reports configured providers; it does no
 - Image: PixVerse CLI `create image`, default model `seedream-4.5`, reference images and 16:9 output.
 - Judge: Qwen compatible endpoint, configured using `DASHSCOPE_API_KEY`, `DASHSCOPE_BASE_URL`, and `QWEN_JUDGE_MODEL`.
 - Video: PixVerse CLI `create video`, default model `v6`, using the generated image.
-- HTTP video adapter: selected when CLI is disabled and `PIXVERSE_API_KEY` is set. Real image generation still requires a CLI image command in the current architecture, so this is not a complete CLI-free workflow.
+- This release supports only the PixVerse CLI image/video path. Switching to other video models or providers and calling the PixVerse HTTP video API directly are not supported. Qwen judging uses its separate compatible API.
 
 `PIXVERSE_CLI_IMAGE_COMMAND` and `PIXVERSE_CLI_VIDEO_COMMAND` override command templates. Supported placeholders include `{pixverse}`, `{prompt}`, `{promptFile}`, `{referenceImages}`, `{arenaImage}`, `{inputImage}`, `{outputDir}`, `{outputImage}`, `{outputVideo}`, and `{winnerSide}`. The backend shell-quotes values.
 

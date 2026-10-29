@@ -16,7 +16,7 @@ function walk(dir) {
 }
 for (const dir of ["backend", "scripts", "tests"]) walk(path.join(root, dir));
 const html = fs.readFileSync(path.join(root, "frontend", "app", "index.html"), "utf8");
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ai-arena-check-"));
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ai-duelpop-check-"));
 try {
   let index = 0;
   for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {

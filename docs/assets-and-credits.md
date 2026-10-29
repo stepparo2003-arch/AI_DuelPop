@@ -6,10 +6,10 @@ The MIT license applies to original code and documentation only. Bundling an ass
 | --- | --- | --- |
 | Character, weapon, arena, and medal artwork | `assets/static/` | Present in the original project; source, creator, and redistribution terms are not recorded in this repository. Verification is pending. |
 | Waiting-room and battle demo videos, including any soundtracks | `assets/static/*.mp4` | Present in the original project; visual and audio rights are not documented. Verification is pending. |
-| Showcase screen recording | `docs/media/ai-arena-mock-demo.mp4` | Supplied by the repository owner as `AIArena_mock_video.mov`, then compressed with audio retained. This records a mock interaction; no live model generation was performed for the demonstration. Embedded media and audio rights remain unverified. |
-| Full-page interface preview | `docs/media/ai-arena-full-page.png` | Captured from the local mock interface. The fixed footer was placed at the bottom for an unobstructed full-page capture. Underlying artwork remains subject to the asset limitations above. |
-| Showcase poster | `docs/media/ai-arena-mock-demo-poster.jpg` | A frame extracted from the owner's showcase recording; the same underlying media limitations apply. |
-| UI reference screenshot | `frontend/app/screen.png` | Included in the original project. Source and reuse terms are not documented. |
+| Showcase screen recording | `docs/media/ai-duelpop-mock-demo.mp4` | Supplied by the repository owner as a mock screen recording, then compressed with audio retained and rebranded for AI DuelPop. This records a mock interaction; no live model generation was performed for the demonstration. Embedded media and audio rights remain unverified. |
+| Full-page interface preview | `docs/media/ai-duelpop-full-page.png` | Captured from the local mock interface. The fixed footer was placed at the bottom for an unobstructed full-page capture. Underlying artwork remains subject to the asset limitations above. |
+| Showcase poster | `docs/media/ai-duelpop-mock-demo-poster.jpg` | A frame extracted from the owner's showcase recording; the same underlying media limitations apply. |
+| UI reference screenshot | `frontend/app/screen.png` | Regenerated from the AI DuelPop mock interface to match the current branding; the same underlying artwork limitations apply. |
 | Hanken Grotesk, JetBrains Mono, and Sora fonts | External Google Fonts stylesheet in `frontend/app/index.html` | Loaded from Google Fonts. Font files are not bundled. Refer to each font's upstream license before redistribution. |
 
 ## Before Reusing or Redistributing Media

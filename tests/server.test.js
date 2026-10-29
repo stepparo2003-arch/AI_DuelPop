@@ -6,7 +6,7 @@ const os = require("node:os");
 const { spawn } = require("node:child_process");
 
 async function fixture(env = {}) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-arena-test-"));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "ai-duelpop-test-"));
   await fs.cp(path.resolve(__dirname, "../backend"), path.join(root, "backend"), {
     recursive: true, filter: source => !["generated", "data"].includes(path.basename(source))
   });
@@ -69,6 +69,7 @@ test("default mock workflow is offline, saves history, and serves only permitted
   t.after(app.close);
   const health = await (await fetch(`${app.base}/api/health`)).json();
   assert.equal(health.mode, "mock");
+  assert.equal(health.service, "ai-duelpop");
   assert.equal(health.requireRealGeneration, false);
   for (const key of ["imageProvider", "judgeProvider", "videoProvider"]) assert.equal(health[key], "mock");
   assert.equal((await fetch(app.base)).status, 200);

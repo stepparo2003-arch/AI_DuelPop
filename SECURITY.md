@@ -1,6 +1,6 @@
 # Security
 
-AI Arena Duel is a local prototype. Use the default `HOST=127.0.0.1` and mock mode for demonstrations. The API has no authentication, rate limiting, or user isolation and is not intended for a public server.
+AI DuelPop is a local prototype. Use the default `HOST=127.0.0.1` and mock mode for demonstrations. The API has no authentication, rate limiting, or user isolation and is not intended for a public server.
 
 ## Local Secrets and Data
 
