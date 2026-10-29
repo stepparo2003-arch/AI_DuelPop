@@ -1,5 +1,13 @@
 # AI Arena Duel
 
+## Mock Demo
+
+> **Mock video — no real AI models were used for generation. For demonstration purposes only.**
+
+[![Watch the AI Arena Duel mock demo](docs/media/ai-arena-mock-demo-poster.jpg)](docs/media/ai-arena-mock-demo.mp4)
+
+**[▶ Watch the mock demo (with audio)](docs/media/ai-arena-mock-demo.mp4)** · 63 seconds
+
 AI Arena Duel is a local web prototype for a two-player AIGC arena battle game. Players select or customize characters and weapons, generate a battle standoff image, let an AI judge decide the winner, then generate a cinematic battle video and save the result to an asset library.
 
 ## Features
