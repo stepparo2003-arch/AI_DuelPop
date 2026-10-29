@@ -1,5 +1,7 @@
 # AI DuelPop
 
+**English** | [简体中文](README.zh-CN.md)
+
 ## Mock Demo
 
 > **Mock video — no real AI models were used for generation. For demonstration purposes only.**
@@ -13,8 +15,6 @@ A local, two-player arena battle prototype. Choose characters and weapons, run a
 **Mock mode is the default.** It uses bundled placeholder media and a deterministic scoring system. It does not call real AI models or require accounts, API keys, or provider credits. The video illustrates the interface and interaction flow; it does not demonstrate live generation.
 
 ## Current Version Scope
-
-此版本是一条固定链路，更多用于验证链路和测试效果，后续作为直播 AI 擂台对战互动玩法的基底，暂不支持切换至其他图片/视频模型资源进行生成（只能通过 PixVerse CLI 进行模型调用）。
 
 This version uses a fixed pipeline, primarily to validate the workflow and test its effects. It is intended as a foundation for future livestream AI arena battle interactions. Switching to other image/video model providers or resources is not supported; image and video model calls are made only through PixVerse CLI. Qwen is used separately for judging. The default mock mode makes no real model calls.
 
